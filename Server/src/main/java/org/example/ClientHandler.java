@@ -10,13 +10,17 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.example.HelpFunction.*;
+import static org.example.Server.addToList;
+import static org.example.Server.getListFileWithSize;
 
 public class ClientHandler implements Runnable{
 
     private final int UPLOAD = 127;
-
+    private final int GET_FILES = 111;
     private final int DOWNLOAD = -128;
     private final int LENGTH_FILE_NAME = 256;
     private final int FILE_EXIST = -157;
@@ -34,15 +38,13 @@ public class ClientHandler implements Runnable{
     private ECBMode symmetricalAlgoECB;
 
     private int numberClient;
-    public ClientHandler(Socket socket, int numberClient) {
+    public ClientHandler(Socket socket) {
         try {
             this.socket = socket;
             this.writer = socket.getOutputStream();
             this.reader = socket.getInputStream();
             this.writeBigInteger = new ObjectOutputStream(socket.getOutputStream());
             this.readerBigInteger = new ObjectInputStream(socket.getInputStream());
-            this.numberClient = numberClient;
-            // здесь можно сделать что необходимо в первую очередь
         } catch (IOException ex)
         {
             closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
@@ -102,6 +104,8 @@ public class ClientHandler implements Runnable{
                     else {
                         System.out.println("Request status: " + status + " [NOT OK]");
                     }
+                } else if (request[0] == GET_FILES) {
+                    sendListFiles();
                 }
             } catch (IOException ex) {
                 closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
@@ -169,6 +173,7 @@ public class ClientHandler implements Runnable{
                 }
             }
             System.out.println("Read from client : " + countByte);
+            addToList(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), (long) sizeFile);
         }
         catch(IOException ex){
             ex.printStackTrace();
@@ -177,6 +182,20 @@ public class ClientHandler implements Runnable{
         }
         return OK;
     }
+
+    private void sendListFiles() {
+        try {
+            final OutputStream yourOutputStream = socket.getOutputStream(); // OutputStream where to send the map in case of network you get it from the Socket instance.
+            final ObjectOutputStream mapOutputStream = new ObjectOutputStream(yourOutputStream);
+            ConcurrentHashMap<String, Long> listFile = getListFileWithSize();
+            mapOutputStream.writeObject(listFile);
+            mapOutputStream.flush();
+            mapOutputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public void closeAll(Socket socket, InputStream reader, OutputStream writer, ObjectInputStream readerBigInteger, ObjectOutputStream writeBigInteger) {
         try {

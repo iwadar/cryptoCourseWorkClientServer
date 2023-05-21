@@ -9,3 +9,7 @@ h
 8Server/src/main/java/org/example/elgamal/ElgamalKey.java,a/d/ade4fe6598ddc833914c4ef35aa638a4b67e2549
 n
 >Server/src/main/java/org/example/elgamal/ElgamalPublicKey.java,b/d/bdb96d635a9c0362ee03d2d2601df1b5434bdf32
+D
+ClientWithUI/pom.xml,6/2/62da33e3663287d64785046323dc7c99c8be741a
+x
+HClientWithUI/src/main/resources/com/example/clientwithui/hello-view.fxml,c/1/c1a341de9596ccd5dbe0d5deb6efe3f1ecc48aed

@@ -3,25 +3,40 @@ package org.example;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
 
     private ServerSocket serverSocket;
-    private int countClient = 0;
+    private static ConcurrentHashMap<String, Long> listFileWithSize;
 
     public Server(ServerSocket serverSocket)
     {
         this.serverSocket = serverSocket;
+        this.listFileWithSize = new ConcurrentHashMap<>();
     }
 
+    public static ConcurrentHashMap<String, Long> getListFileWithSize() {
+        return listFileWithSize;
+    }
+
+    public static void addToList(String fileName, Long size) {
+        listFileWithSize.put(fileName, size);
+    }
     public void startServer() {
+        final File folder = new File("/home/dasha/data/fileFromClients");
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isFile()) {
+                listFileWithSize.put(fileEntry.getName(), fileEntry.length());
+            }
+        }
         try {
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
-                countClient++;
-                System.out.println("A new client has connected! Number client: " + countClient);
-                ClientHandler clientHandler = new ClientHandler(socket, countClient);
+                System.out.println("A new client has connected!");
+                ClientHandler clientHandler = new ClientHandler(socket);
 
                 Thread thread = new Thread(clientHandler);
                 thread.start();

@@ -1,21 +1,20 @@
-package org.example;
+package com.example.clientwithui;
 
-import org.example.camellia.*;
-import org.example.elgamal.ElgamalEncrypt;
-import org.example.elgamal.ElgamalKey;
-import org.example.mode.ECBMode;
+import com.example.clientwithui.camellia.Camellia;
+import com.example.clientwithui.camellia.CamelliaKey;
+import com.example.clientwithui.elgamal.ElgamalEncrypt;
+import com.example.clientwithui.elgamal.ElgamalKey;
+import com.example.clientwithui.mode.ECBMode;
 
 import java.io.*;
 import java.math.BigInteger;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static org.example.HelpFunction.*;
+import static com.example.clientwithui.HelpFunction.*;
+
 
 public class Client {
     private final int UPLOAD = 127;
-    private final int GET_FILES = 111;
     private final int DOWNLOAD = -128;
     private final int LENGTH_FILE_NAME = 256;
     private final int FILE_EXIST = -157;
@@ -126,24 +125,6 @@ public class Client {
         }).start();
     }
 
-    public void getListFile() {
-        try {
-            while (socket.isConnected()) {
-                writer.write(GET_FILES);
-                writer.flush();
-                final InputStream yourInputStream = socket.getInputStream(); // InputStream from where to receive the map, in case of network you get it from the Socket instance.
-                final ObjectInputStream mapInputStream = new ObjectInputStream(yourInputStream);
-                ConcurrentHashMap<String, Long> listFile = (ConcurrentHashMap) mapInputStream.readObject();
-                listFile.forEach((key, value) -> System.out.println(key + " " + value));
-                mapInputStream.close();
-                break;
-            }
-        } catch (IOException | ClassNotFoundException ex) {
-            ex.printStackTrace();
-            closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
-        }
-    }
-
     public void closeAll(Socket socket, InputStream reader, OutputStream writer, ObjectInputStream readerBigInteger, ObjectOutputStream writeBigInteger) {
         try {
             if (reader != null) {
@@ -166,21 +147,17 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) {
-        try (
-                Socket clientSocket = new Socket("127.0.0.1", 8081)
-        ) {
-            Client c = new Client(clientSocket);
-            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
-            Thread.sleep(500);
-            c.getListFile();
-
-        }catch (IOException ex)
-        {
-            ex.printStackTrace();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
+//    public static void main(String[] args) {
+//        try (
+//                Socket clientSocket = new Socket("127.0.0.1", 8081)
+//        ) {
+//            Client c = new Client(clientSocket);
+//            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
+//
+//        }catch (IOException ex)
+//        {
+//            ex.printStackTrace();
+//        }
+//
+//    }
 }

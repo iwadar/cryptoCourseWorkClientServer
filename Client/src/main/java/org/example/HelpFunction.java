@@ -10,7 +10,6 @@ public class HelpFunction {
         System.arraycopy(initArray, startIndex, copy, 0, 16);
         return copy;
     }
-
     public static long[] getLongFrom128Byte(byte[] initArray)
     {
         byte[] bla = new byte[8];
@@ -89,5 +88,14 @@ public class HelpFunction {
             copyInputArrayWithPadding[notCipherText.length + i] = (byte)lengthPadding;
         }
         return copyInputArrayWithPadding;
+    }
+
+    public static void padding(byte[] notCipherText, int sizeBlock, int sizeFullElem) {
+        int lengthPadding = sizeBlock - sizeFullElem;
+        for (int i = 0; i < lengthPadding; i++)
+        {
+            notCipherText[sizeFullElem + i] = (byte)lengthPadding;
+        }
+        return;
     }
 }

@@ -3,10 +3,12 @@ package org.example;
 import org.example.camellia.*;
 import org.example.elgamal.ElgamalEncrypt;
 import org.example.elgamal.ElgamalKey;
+import org.example.mode.ECBMode;
 
 import java.io.*;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 import static org.example.HelpFunction.*;
 
@@ -16,13 +18,14 @@ public class Client {
     private final int LENGTH_FILE_NAME = 256;
     private final int FILE_EXIST = -157;
     private final int OK = 200;
-    private final int SIZE_BLOCK_CAMELLIA = 128;
+    private final int SIZE_BLOCK_CAMELLIA = 16;
     private Socket socket;
     private InputStream reader;
     private OutputStream writer;
     private ObjectOutputStream writeBigInteger;
     private ObjectInputStream readerBigInteger;
     private Camellia symmetricalAlgo;
+    private ECBMode symmetricalAlgoECB;
 
     public Client(Socket socket) {
         try {
@@ -45,42 +48,59 @@ public class Client {
             CamelliaKey camelliaKey = new CamelliaKey();
             camelliaKey.generateKeys(camelliaSecretKeyString);
             symmetricalAlgo = new Camellia(camelliaKey);
+            symmetricalAlgoECB = new ECBMode(symmetricalAlgo);
         } catch (IOException | ClassNotFoundException ex)
         {
             closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
         }
     }
 
-    public void sendFile() {
+    private void sendStartInformation(String fullFileName, int state) {
+        File file = new File(fullFileName);
+        String fileName = file.getName();
+        byte[] fileNameInBytes = fileName.getBytes();
+        try {
+            writer.write(state);
+            writer.write(fileNameInBytes.length);
+            writer.write(fileNameInBytes);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return;
+        }
+        if (state == UPLOAD) {
+            long fileSize = file.length() + (SIZE_BLOCK_CAMELLIA - file.length() % SIZE_BLOCK_CAMELLIA);
+            try {
+                writer.write(longToBytes(fileSize));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public void sendFile(String fullFileName) {
         try {
             while (socket.isConnected()) {
-                String fullFileName = "/home/dasha/data/bla";
-                File file = new File(fullFileName);
-                String fileName = file.getName();
-                byte[] fileNameInBytes = fileName.getBytes();
-                byte[] request = new byte[fileNameInBytes.length];
-                System.arraycopy(fileNameInBytes, 0, request, 0, fileNameInBytes.length);
-                writer.write(UPLOAD);
-                writer.write(fileNameInBytes.length);
-                writer.write(request);
+                sendStartInformation(fullFileName, UPLOAD);
+                byte[] data = new byte[SIZE_BLOCK_CAMELLIA];
+                int read, countRead = 0;
                 try(FileInputStream readerFromFile = new FileInputStream(fullFileName))
                 {
-                    byte[] data = new byte[SIZE_BLOCK_CAMELLIA];
-                    int read;
-                    int countRead = 0;
                     while ((read = readerFromFile.read(data)) != -1) {
-                        byte[] encrypt = symmetricalAlgo.encrypt(data);
-                        // И отправляем в сокет
-                        writer.write(encrypt);
-                        countRead += read;
+                        if (read < SIZE_BLOCK_CAMELLIA)
+                        {
+                            padding(data, SIZE_BLOCK_CAMELLIA, read);
+                        }
+                        writer.write(symmetricalAlgoECB.encrypt(data));
+                        countRead += SIZE_BLOCK_CAMELLIA;
                     }
-                    System.out.println("Read : " + countRead);
+                    System.out.println("[LOG] : SEND (byte) : " + countRead);
                     break;
                 }
                 catch(IOException ex){
                     System.out.println(ex.getMessage());
                 }
                 writer.flush();
+                break;
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -128,10 +148,10 @@ public class Client {
 
     public static void main(String[] args) {
         try (
-                Socket clientSocket = new Socket("127.0.0.1", 8080)
+                Socket clientSocket = new Socket("127.0.0.1", 8081)
         ) {
             Client c = new Client(clientSocket);
-            c.sendFile();
+            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
 
         }catch (IOException ex)
         {

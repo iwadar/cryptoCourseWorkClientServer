@@ -4,11 +4,14 @@ import org.example.camellia.Camellia;
 import org.example.camellia.CamelliaKey;
 import org.example.elgamal.ElgamalEncrypt;
 import org.example.elgamal.ElgamalKey;
+import org.example.mode.ECBMode;
 
 import java.io.*;
 import java.math.BigInteger;
 import java.net.Socket;
-import java.util.Optional;
+import java.nio.ByteBuffer;
+
+import static org.example.HelpFunction.*;
 
 public class ClientHandler implements Runnable{
 
@@ -20,7 +23,7 @@ public class ClientHandler implements Runnable{
     private final int OK = 200;
     private final int SERVER_ERROR = -300;
 
-    private final int SIZE_BLOCK_CAMELLIA = 128;
+    private final int SIZE_BLOCK_CAMELLIA = 16;
 
     private Socket socket;
     private InputStream reader;
@@ -28,6 +31,7 @@ public class ClientHandler implements Runnable{
     private ObjectOutputStream writeBigInteger;
     private ObjectInputStream readerBigInteger;
     private Camellia symmetricalAlgo;
+    private ECBMode symmetricalAlgoECB;
 
     private int numberClient;
     public ClientHandler(Socket socket, int numberClient) {
@@ -45,8 +49,7 @@ public class ClientHandler implements Runnable{
         }
     }
 
-    @Override
-    public void run() {
+    private String keyExchange() {
         ElgamalKey k = new ElgamalKey();
         k.generateKey();
         ElgamalEncrypt elgamalCipher = new ElgamalEncrypt(k);
@@ -65,9 +68,16 @@ public class ClientHandler implements Runnable{
         } catch (IOException | ClassNotFoundException ex) {
             closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
         }
+        return camelliaSymmetricalKeyString;
+    }
+
+    @Override
+    public void run() {
+        String camelliaSymmetricalKeyString = keyExchange();
         CamelliaKey camelliaKey = new CamelliaKey();
         camelliaKey.generateKeys(camelliaSymmetricalKeyString);
         symmetricalAlgo = new Camellia(camelliaKey);
+        symmetricalAlgoECB = new ECBMode(symmetricalAlgo);
 
         while (socket.isConnected()) {
             try {
@@ -75,17 +85,22 @@ public class ClientHandler implements Runnable{
                 reader.read(request, 0, 1);
                 if (request[0] == UPLOAD)
                 {
+                    System.out.println("Request : upload file to server");
+                    // получили размер имени, а потом имя файла
                     int lengthFileName = reader.read();
                     request = new byte[lengthFileName];
-                    System.out.println("Request : upload file to server");
                     reader.read(request, 0, lengthFileName);
+
+                    // получили размер файла
+                    byte[] fileSizeBuf = new byte[8];
+                    reader.read(fileSizeBuf, 0, 8);
+                    long sizeFile = bytesToLong(fileSizeBuf);
                     int status;
-                    if ((status = uploadFile(new String(request))) > 0){
-                        System.out.println("Request status: 200 [OK]");
+                    if ((status = uploadFile(new String(request), sizeFile)) > 0){
+                        System.out.println("Request status: " + status + " [OK]");
                     }
                     else {
                         System.out.println("Request status: " + status + " [NOT OK]");
-
                     }
                 }
             } catch (IOException ex) {
@@ -95,21 +110,63 @@ public class ClientHandler implements Runnable{
         }
     }
 
-    private int uploadFile(String fileName) {
-        String fullFileName = "/home/dasha/data/fileFromClients/" + this.numberClient + "/" + fileName;
-        File file = new File(fullFileName);
-        if (file.exists()) {
-            return FILE_EXIST;
+    private static String getFileExtension(String fileName) {
+        int index = fileName.indexOf('.');
+        return index == -1? null : fileName.substring(index);
+    }
+
+    private String createFileOnServer(String fileName) {
+        String fullFileName = "/home/dasha/data/fileFromClients/";
+        File file = new File(fullFileName + fileName);
+        String fileNameWithoutExtension = fileName.replaceAll("\\.\\w+$", "");
+        String extension = getFileExtension(fileName);
+        int fileNo = 0;
+        try {
+            if (file.exists()) {
+                while(file.exists()){
+                    fileNo++;
+                    file = new File(fullFileName + fileNameWithoutExtension + "("  + fileNo + ")" + extension);
+                }
+            } else {
+                file.createNewFile();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return "";
         }
-        System.out.println(fullFileName);
+        return file.getPath();
+    }
+
+    private void deleteFile(String fullFileName) {
+        File file = new File(fullFileName);
+        if(file.delete()){
+            System.out.println("[LOG] : " + fullFileName + " was deleted");
+        } else System.out.println("[LOG] : " + fullFileName + " don't exist");
+    }
+
+    private int uploadFile(String fileName, long sizeFile) {
+        String fullFileName = createFileOnServer(fileName);
+        if ("".equals(fullFileName)) {
+            return SERVER_ERROR;
+        }
+        System.out.println("[LOG] : CREATE E NEW FILE { " + fullFileName + " }");
         try(FileWriter writerToFile = new FileWriter(fullFileName, false))
         {
             byte[] encryptText = new byte[SIZE_BLOCK_CAMELLIA];
-            int countByte = 0;
-            int readByte;
-            while ((readByte = reader.read(encryptText)) > 0) {
-                writerToFile.write(new String(symmetricalAlgo.decrypt(encryptText)));
-                countByte += readByte;
+            int countByte = 0, read;
+            while (countByte < sizeFile) {
+                 if ((read = reader.read(encryptText)) == -1) {
+                    deleteFile(fullFileName);
+                    break;
+                 }
+                countByte += read;
+                if (countByte == sizeFile) {
+                    byte[] decryptText = deletePadding(symmetricalAlgoECB.decrypt(encryptText));
+                    writerToFile.write(new String(decryptText));
+                }
+                else {
+                    writerToFile.write(new String(symmetricalAlgoECB.decrypt(encryptText)));
+                }
             }
             System.out.println("Read from client : " + countByte);
         }

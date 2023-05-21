@@ -28,15 +28,24 @@ public class ECBMode implements IModeCipher
         ExecutorService service = Executors.newFixedThreadPool(processors);
         List<Future<byte[]>> encryptedBlocksFutures = new LinkedList<>();
 
-        byte[] copyInputArrayWithPadding = padding(notCipherText, 16);
+//        byte[] copyInputArrayWithPadding = padding(notCipherText, 16);
+//
+//        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
+//        {
+//            byte[] block = getArray128(copyInputArrayWithPadding, i);
+//            encryptedBlocksFutures.add(service.submit(() -> symmetricalAlgorithm.encrypt(block)));
+//        }
+//        service.shutdown();
+//        return getArrayFromExecutors(encryptedBlocksFutures, copyInputArrayWithPadding.length);
 
-        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
+        for (int i = 0; i < notCipherText.length; i += 16)
         {
-            byte[] block = getArray128(copyInputArrayWithPadding, i);
+            byte[] block = getArray128(notCipherText, i);
             encryptedBlocksFutures.add(service.submit(() -> symmetricalAlgorithm.encrypt(block)));
         }
         service.shutdown();
-        return getArrayFromExecutors(encryptedBlocksFutures, copyInputArrayWithPadding.length);
+        return getArrayFromExecutors(encryptedBlocksFutures, notCipherText.length);
+
     }
 
     @Override
@@ -50,7 +59,7 @@ public class ECBMode implements IModeCipher
         }
         service.shutdown();
         cipherText = getArrayFromExecutors(encryptedBlocksFutures, cipherText.length);
-        cipherText = deletePadding(cipherText);
+//        cipherText = deletePadding(cipherText);
         return cipherText;
     }
     private static byte[] getArrayFromExecutors(List<Future<byte[]>> encryptedBlocksFutures, int lengthOfText)

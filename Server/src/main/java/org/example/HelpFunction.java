@@ -41,6 +41,7 @@ public class HelpFunction {
     public static byte[] deletePadding(byte[] input)
     {
         int paddingLength = input[input.length - 1];
+        System.out.println("padding:  " + paddingLength );
         byte[] tmp = new byte[input.length - paddingLength];
         System.arraycopy(input, 0, tmp, 0, tmp.length);
         return tmp;

@@ -28,7 +28,7 @@ public class ClientHandler implements Runnable{
     private final int SERVER_ERROR = -300;
 
     private final int SIZE_BLOCK_CAMELLIA = 16;
-
+    private final int SIZE_BLOCK_READ = 1024;
     private Socket socket;
     private InputStream reader;
     private OutputStream writer;
@@ -156,7 +156,7 @@ public class ClientHandler implements Runnable{
         System.out.println("[LOG] : CREATE E NEW FILE { " + fullFileName + " }");
         try(FileWriter writerToFile = new FileWriter(fullFileName, false))
         {
-            byte[] encryptText = new byte[SIZE_BLOCK_CAMELLIA];
+            byte[] encryptText = new byte[SIZE_BLOCK_READ];
             int countByte = 0, read;
             while (countByte < sizeFile) {
                  if ((read = reader.read(encryptText)) == -1) {
@@ -165,15 +165,20 @@ public class ClientHandler implements Runnable{
                  }
                 countByte += read;
                 if (countByte == sizeFile) {
-                    byte[] decryptText = deletePadding(symmetricalAlgoECB.decrypt(encryptText));
+                    for (int i = 0; i < read - SIZE_BLOCK_CAMELLIA; i += SIZE_BLOCK_CAMELLIA) {
+                        writerToFile.write(new String(symmetricalAlgoECB.decrypt(getArray128(encryptText, i))));
+                    }
+                    byte[] decryptText = deletePadding(symmetricalAlgoECB.decrypt(getArray128(encryptText, read - SIZE_BLOCK_CAMELLIA)));
                     writerToFile.write(new String(decryptText));
                 }
                 else {
-                    writerToFile.write(new String(symmetricalAlgoECB.decrypt(encryptText)));
+                    for (int i = 0; i < encryptText.length; i += SIZE_BLOCK_CAMELLIA) {
+                        writerToFile.write(new String(symmetricalAlgoECB.decrypt(getArray128(encryptText, i))));
+                    }
                 }
             }
             System.out.println("Read from client : " + countByte);
-            addToList(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), (long) sizeFile);
+            addToList(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), sizeFile);
         }
         catch(IOException ex){
             ex.printStackTrace();

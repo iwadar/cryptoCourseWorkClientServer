@@ -28,7 +28,7 @@ public class ClientHandler implements Runnable{
     private final int SERVER_ERROR = -300;
 
     private final int SIZE_BLOCK_CAMELLIA = 16;
-    private final int SIZE_BLOCK_READ = 1024;
+    private final int SIZE_BLOCK_READ = 2048;
     private Socket socket;
     private InputStream reader;
     private OutputStream writer;
@@ -190,12 +190,10 @@ public class ClientHandler implements Runnable{
 
     private void sendListFiles() {
         try {
-            final OutputStream yourOutputStream = socket.getOutputStream(); // OutputStream where to send the map in case of network you get it from the Socket instance.
-            final ObjectOutputStream mapOutputStream = new ObjectOutputStream(yourOutputStream);
             ConcurrentHashMap<String, Long> listFile = getListFileWithSize();
-            mapOutputStream.writeObject(listFile);
-            mapOutputStream.flush();
-            mapOutputStream.close();
+            listFile.forEach((key, value) -> System.out.println(key + " " + value));
+            writeBigInteger.writeObject(listFile);
+            writeBigInteger.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

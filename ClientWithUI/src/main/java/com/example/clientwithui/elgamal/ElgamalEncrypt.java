@@ -35,7 +35,7 @@ public class ElgamalEncrypt
         for(int i = 0; i < encryptText.length; i += 2)
         {
             decryptText[i / 2] = encryptText[i + 1].multiply(encryptText[i].modPow(key.getPublicKey().getP().subtract(BigInteger.ONE).subtract(key.getX()), key.getPublicKey().getP())).mod(key.getPublicKey().getP());
-       }
+        }
         return decryptText;
     }
 }

@@ -22,7 +22,7 @@ public class Client {
     private final int FILE_EXIST = -157;
     private final int OK = 200;
     private final int SIZE_BLOCK_CAMELLIA = 16;
-    private final int SIZE_BLOCK_READ = 1024;
+    private final int SIZE_BLOCK_READ = 2048;
 
     private Socket socket;
     private InputStream reader;
@@ -145,22 +145,22 @@ public class Client {
         }).start();
     }
 
-    public void getListFile() {
+    public ConcurrentHashMap<String, Long> getListFile() {
         try {
             while (socket.isConnected()) {
                 writer.write(GET_FILES);
                 writer.flush();
-                final InputStream yourInputStream = socket.getInputStream(); // InputStream from where to receive the map, in case of network you get it from the Socket instance.
-                final ObjectInputStream mapInputStream = new ObjectInputStream(yourInputStream);
-                ConcurrentHashMap<String, Long> listFile = (ConcurrentHashMap) mapInputStream.readObject();
+//                final InputStream yourInputStream = socket.getInputStream(); // InputStream from where to receive the map, in case of network you get it from the Socket instance.
+//                final ObjectInputStream mapInputStream = new ObjectInputStream(yourInputStream);
+                ConcurrentHashMap<String, Long> listFile = (ConcurrentHashMap) readerBigInteger.readObject();
 //                listFile.forEach((key, value) -> System.out.println(key + " " + value));
-                mapInputStream.close();
-                break;
+                return listFile;
             }
         } catch (IOException | ClassNotFoundException ex) {
             ex.printStackTrace();
             closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
         }
+        return null;
     }
 
     public void closeAll(Socket socket, InputStream reader, OutputStream writer, ObjectInputStream readerBigInteger, ObjectOutputStream writeBigInteger) {
@@ -192,8 +192,12 @@ public class Client {
             Client c = new Client(clientSocket);
             c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
 //            Thread.sleep(500);
+            ConcurrentHashMap<String, Long> listFile = c.getListFile();
+            listFile.forEach((key, value) -> System.out.println(key + " " + value));
+            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
+            listFile = c.getListFile();
+            listFile.forEach((key, value) -> System.out.println(key + " " + value));
 //            c.getListFile();
-
         }catch (IOException ex)
         {
             ex.printStackTrace();

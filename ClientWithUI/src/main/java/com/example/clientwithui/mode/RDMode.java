@@ -1,6 +1,9 @@
 package com.example.clientwithui.mode;
 
+
 import com.example.clientwithui.camellia.Camellia;
+
+import static com.example.clientwithui.HelpFunction.*;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -10,8 +13,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import static com.example.clientwithui.HelpFunction.*;
 
 public class RDMode implements IModeCipher
 {

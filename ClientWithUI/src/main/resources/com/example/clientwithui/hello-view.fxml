@@ -75,10 +75,10 @@
          </children>
       </HBox>
       <TableView fx:id="table" layoutX="14.0" layoutY="74.0" prefHeight="374.0" prefWidth="810.0" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="74.0">
-        <columns>
-          <TableColumn fx:id="tableNameFile" prefWidth="710.0" text="Name file" />
-          <TableColumn fx:id="tableSizeFile" minWidth="0.0" prefWidth="116.0" text="Size file" />
-        </columns>
+<!--        <columns>-->
+<!--          <TableColumn fx:id="tableNameFile" prefWidth="710.0" text="Name file" />-->
+<!--          <TableColumn fx:id="tableSizeFile" minWidth="0.0" prefWidth="116.0" text="Size file" />-->
+<!--        </columns>-->
          <padding>
             <Insets bottom="10.0" top="2.0" />
          </padding>

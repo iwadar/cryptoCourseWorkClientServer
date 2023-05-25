@@ -6,10 +6,14 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="Ciphers" />
         <module name="Server" />
         <module name="Client" />
         <module name="ClientWithUI" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ExchangeFiles" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
 </project>

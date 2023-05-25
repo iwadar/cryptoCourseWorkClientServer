@@ -35,7 +35,16 @@ public class ElgamalEncrypt
         for(int i = 0; i < encryptText.length; i += 2)
         {
             decryptText[i / 2] = encryptText[i + 1].multiply(encryptText[i].modPow(key.getPublicKey().getP().subtract(BigInteger.ONE).subtract(key.getX()), key.getPublicKey().getP())).mod(key.getPublicKey().getP());
+//            encryptText[i] = key.getPublicKey().getG().modPow(kSession, key.getPublicKey().getP());
+//            encryptText[i + 1] = key.getPublicKey().getY().modPow(kSession, key.getPublicKey().getP()).multiply(new BigInteger(String.valueOf(text[i / 2])).mod(key.getPublicKey().getP()));
         }
+//        byte[] array = new byte[decryptText.length];
+//        for (int i = 0; i < decryptText.length; i++)
+//        {
+//            byte arr[] = decryptText[i].toByteArray();
+//            System.arraycopy(arr, 0, array, i, arr.length);
+//        }
+//        return array;
         return decryptText;
     }
 }

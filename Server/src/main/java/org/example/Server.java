@@ -3,8 +3,8 @@ package org.example;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
@@ -36,7 +36,7 @@ public class Server {
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
                 System.out.println("A new client has connected!");
-                ClientHandler clientHandler = new ClientHandler(socket);
+                ClientHandler clientHandler = new ClientHandler(socket, listFileWithSize);
 
                 Thread thread = new Thread(clientHandler);
                 thread.start();

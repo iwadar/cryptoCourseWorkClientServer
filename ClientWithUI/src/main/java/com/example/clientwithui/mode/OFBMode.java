@@ -1,9 +1,8 @@
 package com.example.clientwithui.mode;
 
-
 import com.example.clientwithui.camellia.Camellia;
 
-import static com.example.clientwithui.HelpFunction.*;
+import static org.example.HelpFunction.*;
 
 public class OFBMode implements IModeCipher
 {

@@ -7,6 +7,8 @@
         <option value="$PROJECT_DIR$/Server/pom.xml" />
         <option value="$PROJECT_DIR$/Client/pom.xml" />
         <option value="$PROJECT_DIR$/ClientWithUI/pom.xml" />
+        <option value="$PROJECT_DIR$/Ciphers/pom.xml" />
+        <option value="$PROJECT_DIR$/untitled/pom.xml" />
       </list>
     </option>
   </component>

@@ -9,7 +9,6 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.example.HelpFunction.*;
@@ -23,6 +22,7 @@ public class Client {
     private final int OK = 200;
     private final int SIZE_BLOCK_CAMELLIA = 16;
     private final int SIZE_BLOCK_READ = 2048;
+    private final int SERVER_ERROR = 300;
 
     private Socket socket;
     private InputStream reader;
@@ -115,12 +115,20 @@ public class Client {
                         }
                     }
                     System.out.println("[LOG] : SEND (byte) : " + countRead);
-                    break;
+//                    break;
                 }
                 catch(IOException ex){
                     System.out.println(ex.getMessage());
                 }
-                writer.flush();
+//                writer.flush();
+                int response = reader.read();
+
+                if (response == OK) {
+                    System.out.println("File downloads");
+                }
+                else {
+                    System.out.println("File DON'T downloads");
+                }
                 break;
             }
         } catch (IOException ex) {
@@ -145,22 +153,17 @@ public class Client {
         }).start();
     }
 
-    public ConcurrentHashMap<String, Long> getListFile() {
+    public ConcurrentHashMap getListFile() {
         try {
-            while (socket.isConnected()) {
-                writer.write(GET_FILES);
-                writer.flush();
-//                final InputStream yourInputStream = socket.getInputStream(); // InputStream from where to receive the map, in case of network you get it from the Socket instance.
-//                final ObjectInputStream mapInputStream = new ObjectInputStream(yourInputStream);
-                ConcurrentHashMap<String, Long> listFile = (ConcurrentHashMap) readerBigInteger.readObject();
-//                listFile.forEach((key, value) -> System.out.println(key + " " + value));
-                return listFile;
-            }
+            writer.write(GET_FILES);
+            writer.flush();
+            readerBigInteger.reset();
+            return (ConcurrentHashMap) readerBigInteger.readObject();
         } catch (IOException | ClassNotFoundException ex) {
             ex.printStackTrace();
             closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
         }
-        return null;
+        return new ConcurrentHashMap();
     }
 
     public void closeAll(Socket socket, InputStream reader, OutputStream writer, ObjectInputStream readerBigInteger, ObjectOutputStream writeBigInteger) {
@@ -190,17 +193,25 @@ public class Client {
                 Socket clientSocket = new Socket("127.0.0.1", 8080)
         ) {
             Client c = new Client(clientSocket);
-            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
-//            Thread.sleep(500);
-            ConcurrentHashMap<String, Long> listFile = c.getListFile();
+            c.sendFile("/home/dasha/Pictures/face.jpg");
+            System.out.println("-----------------------------------------------");
+            Thread.sleep(6000);
+            var listFile = c.getListFile();
             listFile.forEach((key, value) -> System.out.println(key + " " + value));
+            System.out.println("-----------------------------------------------");
+
             c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
-            listFile = c.getListFile();
-            listFile.forEach((key, value) -> System.out.println(key + " " + value));
+            System.out.println("-----------------------------------------------");
+            Thread.sleep(6000);
+//            listFile = c.getListFile();
+            var listFile2 = c.getListFile();
+            listFile2.forEach((key, value) -> System.out.println(key + " " + value));
 //            c.getListFile();
         }catch (IOException ex)
         {
             ex.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 //        catch (InterruptedException e) {
 //            throw new RuntimeException(e);

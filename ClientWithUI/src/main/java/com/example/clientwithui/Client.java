@@ -1,10 +1,8 @@
 package com.example.clientwithui;
 
-import com.example.clientwithui.camellia.Camellia;
-import com.example.clientwithui.camellia.CamelliaKey;
-import com.example.clientwithui.elgamal.ElgamalEncrypt;
-import com.example.clientwithui.elgamal.ElgamalKey;
-import com.example.clientwithui.mode.ECBMode;
+import com.example.clientwithui.camellia.*;
+import com.example.clientwithui.elgamal.*;
+import com.example.clientwithui.mode.*;
 
 import java.io.*;
 import java.math.BigInteger;

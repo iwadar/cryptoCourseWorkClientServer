@@ -14,15 +14,12 @@ public class ElgamalPublicKey
     static List<BigInteger> primitiveRoots = new ArrayList<>();
     private static final int NUMBER_CHECK_SIMPLICITY = 50;
 
+    public ElgamalPublicKey() {}
     public ElgamalPublicKey(BigInteger p, BigInteger g, BigInteger x)
     {
         this.p = p;
         this.g = g;
         this.y = g.modPow(x, p); // y = g^x mod p
-    }
-
-    public ElgamalPublicKey() {
-
     }
 
     public BigInteger getP()

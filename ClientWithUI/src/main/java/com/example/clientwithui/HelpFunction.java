@@ -41,6 +41,7 @@ public class HelpFunction {
     public static byte[] deletePadding(byte[] input)
     {
         int paddingLength = input[input.length - 1];
+        System.out.println("padding:  " + paddingLength );
         byte[] tmp = new byte[input.length - paddingLength];
         System.arraycopy(input, 0, tmp, 0, tmp.length);
         return tmp;
@@ -81,7 +82,6 @@ public class HelpFunction {
     public static byte[] padding(byte[] notCipherText, int sizeBlock)
     {
         int lengthPadding = sizeBlock - notCipherText.length % sizeBlock;
-        System.out.println("padding:  " + lengthPadding );
         byte[] copyInputArrayWithPadding = new byte[notCipherText.length + lengthPadding];
         System.arraycopy(notCipherText, 0, copyInputArrayWithPadding, 0, notCipherText.length);
         for (int i = 0; i < lengthPadding; i++)
@@ -93,7 +93,6 @@ public class HelpFunction {
 
     public static void padding(byte[] notCipherText, int sizeBlock, int sizeFullElem) {
         int lengthPadding = sizeBlock - sizeFullElem;
-        System.out.println("padding:  " + lengthPadding );
         for (int i = 0; i < lengthPadding; i++)
         {
             notCipherText[sizeFullElem + i] = (byte)lengthPadding;

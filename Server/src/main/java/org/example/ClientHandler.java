@@ -22,10 +22,9 @@ public class ClientHandler implements Runnable{
     private final int UPLOAD = 127;
     private final int GET_FILES = 111;
     private final int DOWNLOAD = -128;
-    private final int LENGTH_FILE_NAME = 256;
     private final int FILE_EXIST = -157;
     private final int OK = 200;
-    private final int SERVER_ERROR = -300;
+    private final int SERVER_ERROR = 300;
 
     private final int SIZE_BLOCK_CAMELLIA = 16;
     private final int SIZE_BLOCK_READ = 2048;
@@ -36,15 +35,16 @@ public class ClientHandler implements Runnable{
     private ObjectInputStream readerBigInteger;
     private Camellia symmetricalAlgo;
     private ECBMode symmetricalAlgoECB;
+    private ConcurrentHashMap<String, Long> listFileWithSize;
 
-    private int numberClient;
-    public ClientHandler(Socket socket) {
+    public ClientHandler(Socket socket, ConcurrentHashMap<String, Long> listFileWithSize) {
         try {
             this.socket = socket;
             this.writer = socket.getOutputStream();
             this.reader = socket.getInputStream();
             this.writeBigInteger = new ObjectOutputStream(socket.getOutputStream());
             this.readerBigInteger = new ObjectInputStream(socket.getInputStream());
+            this.listFileWithSize = listFileWithSize;
         } catch (IOException ex)
         {
             closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
@@ -55,7 +55,7 @@ public class ClientHandler implements Runnable{
         ElgamalKey k = new ElgamalKey();
         k.generateKey();
         ElgamalEncrypt elgamalCipher = new ElgamalEncrypt(k);
-        String camelliaSymmetricalKeyString = "";
+        StringBuilder camelliaSymmetricalKeyString = new StringBuilder();
         try {
             BigInteger[] publicKey = {k.getPublicKey().getP(), k.getPublicKey().getG(), k.getPublicKey().getY()};
             writeBigInteger.writeObject(publicKey);
@@ -65,12 +65,12 @@ public class ClientHandler implements Runnable{
             encryptSymmetricalKey = elgamalCipher.decrypt(encryptSymmetricalKey);
 
             for (var number: encryptSymmetricalKey) {
-                camelliaSymmetricalKeyString += new String(number.toByteArray());
+                camelliaSymmetricalKeyString.append(new String(number.toByteArray()));
             }
         } catch (IOException | ClassNotFoundException ex) {
             closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
         }
-        return camelliaSymmetricalKeyString;
+        return camelliaSymmetricalKeyString.toString();
     }
 
     @Override
@@ -98,13 +98,16 @@ public class ClientHandler implements Runnable{
                     reader.read(fileSizeBuf, 0, 8);
                     long sizeFile = bytesToLong(fileSizeBuf);
                     int status;
-                    if ((status = uploadFile(new String(request), sizeFile)) > 0){
+                    if ((status = uploadFile(new String(request), sizeFile)) == OK){
                         System.out.println("Request status: " + status + " [OK]");
+                        writer.write(OK);
                     }
                     else {
                         System.out.println("Request status: " + status + " [NOT OK]");
+                        writer.write(SERVER_ERROR);
                     }
                 } else if (request[0] == GET_FILES) {
+                    System.out.println("Request : get list of files");
                     sendListFiles();
                 }
             } catch (IOException ex) {
@@ -153,8 +156,9 @@ public class ClientHandler implements Runnable{
         if ("".equals(fullFileName)) {
             return SERVER_ERROR;
         }
-        System.out.println("[LOG] : CREATE E NEW FILE { " + fullFileName + " }");
-        try(FileWriter writerToFile = new FileWriter(fullFileName, false))
+        System.out.println("[LOG] : CREATE NEW FILE { " + fullFileName + " }");
+        try (OutputStream writerToFile = new BufferedOutputStream(new FileOutputStream(fullFileName)))
+//        try(FileWriter writerToFile = new FileWriter(fullFileName, false))
         {
             byte[] encryptText = new byte[SIZE_BLOCK_READ];
             int countByte = 0, read;
@@ -166,19 +170,20 @@ public class ClientHandler implements Runnable{
                 countByte += read;
                 if (countByte == sizeFile) {
                     for (int i = 0; i < read - SIZE_BLOCK_CAMELLIA; i += SIZE_BLOCK_CAMELLIA) {
-                        writerToFile.write(new String(symmetricalAlgoECB.decrypt(getArray128(encryptText, i))));
+                        writerToFile.write(symmetricalAlgoECB.decrypt(getArray128(encryptText, i)));
                     }
                     byte[] decryptText = deletePadding(symmetricalAlgoECB.decrypt(getArray128(encryptText, read - SIZE_BLOCK_CAMELLIA)));
-                    writerToFile.write(new String(decryptText));
+                    writerToFile.write(decryptText);
                 }
                 else {
                     for (int i = 0; i < encryptText.length; i += SIZE_BLOCK_CAMELLIA) {
-                        writerToFile.write(new String(symmetricalAlgoECB.decrypt(getArray128(encryptText, i))));
+                        writerToFile.write(symmetricalAlgoECB.decrypt(getArray128(encryptText, i)));
                     }
                 }
             }
             System.out.println("Read from client : " + countByte);
-            addToList(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), sizeFile);
+//            addToList(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), sizeFile);
+            listFileWithSize.put(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), sizeFile);
         }
         catch(IOException ex){
             ex.printStackTrace();
@@ -190,9 +195,9 @@ public class ClientHandler implements Runnable{
 
     private void sendListFiles() {
         try {
-            ConcurrentHashMap<String, Long> listFile = getListFileWithSize();
-            listFile.forEach((key, value) -> System.out.println(key + " " + value));
-            writeBigInteger.writeObject(listFile);
+            writeBigInteger.reset();
+            listFileWithSize.forEach((key, value) -> System.out.println(key + " " + value));
+            writeBigInteger.writeObject(listFileWithSize);
             writeBigInteger.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -14,25 +14,13 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.example.HelpFunction.*;
-import static org.example.Server.addToList;
-import static org.example.Server.getListFileWithSize;
 
 public class ClientHandler implements Runnable{
-
-    private final int UPLOAD = 127;
-    private final int GET_FILES = 111;
-    private final int DOWNLOAD = -128;
-    private final int FILE_EXIST = -157;
-    private final int OK = 200;
-    private final int SERVER_ERROR = 300;
-
-    private final int SIZE_BLOCK_CAMELLIA = 16;
-    private final int SIZE_BLOCK_READ = 2048;
     private Socket socket;
     private InputStream reader;
     private OutputStream writer;
-    private ObjectOutputStream writeBigInteger;
-    private ObjectInputStream readerBigInteger;
+    private ObjectOutputStream writerObject;
+    private ObjectInputStream readerObject;
     private Camellia symmetricalAlgo;
     private ECBMode symmetricalAlgoECB;
     private ConcurrentHashMap<String, Long> listFileWithSize;
@@ -42,12 +30,12 @@ public class ClientHandler implements Runnable{
             this.socket = socket;
             this.writer = socket.getOutputStream();
             this.reader = socket.getInputStream();
-            this.writeBigInteger = new ObjectOutputStream(socket.getOutputStream());
-            this.readerBigInteger = new ObjectInputStream(socket.getInputStream());
+            this.writerObject = new ObjectOutputStream(socket.getOutputStream());
+            this.readerObject = new ObjectInputStream(socket.getInputStream());
             this.listFileWithSize = listFileWithSize;
         } catch (IOException ex)
         {
-            closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
+            closeAll(socket, reader, writer, readerObject, writerObject);
         }
     }
 
@@ -58,9 +46,9 @@ public class ClientHandler implements Runnable{
         StringBuilder camelliaSymmetricalKeyString = new StringBuilder();
         try {
             BigInteger[] publicKey = {k.getPublicKey().getP(), k.getPublicKey().getG(), k.getPublicKey().getY()};
-            writeBigInteger.writeObject(publicKey);
-            writeBigInteger.flush();
-            BigInteger[] encryptSymmetricalKey = (BigInteger[]) readerBigInteger.readObject();
+            writerObject.writeObject(publicKey);
+            writerObject.flush();
+            BigInteger[] encryptSymmetricalKey = (BigInteger[]) readerObject.readObject();
 
             encryptSymmetricalKey = elgamalCipher.decrypt(encryptSymmetricalKey);
 
@@ -68,7 +56,7 @@ public class ClientHandler implements Runnable{
                 camelliaSymmetricalKeyString.append(new String(number.toByteArray()));
             }
         } catch (IOException | ClassNotFoundException ex) {
-            closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
+            closeAll(socket, reader, writer, readerObject, writerObject);
         }
         return camelliaSymmetricalKeyString.toString();
     }
@@ -85,7 +73,7 @@ public class ClientHandler implements Runnable{
             try {
                 byte[] request = new byte[1];
                 reader.read(request, 0, 1);
-                if (request[0] == UPLOAD)
+                if (request[0] == Functional.UPLOAD)
                 {
                     System.out.println("Request : upload file to server");
                     // получили размер имени, а потом имя файла
@@ -98,114 +86,108 @@ public class ClientHandler implements Runnable{
                     reader.read(fileSizeBuf, 0, 8);
                     long sizeFile = bytesToLong(fileSizeBuf);
                     int status;
-                    if ((status = uploadFile(new String(request), sizeFile)) == OK){
+                    if ((status = uploadFile(new String(request), sizeFile)) == Functional.OK){
                         System.out.println("Request status: " + status + " [OK]");
-                        writer.write(OK);
+                        writer.write(Functional.OK);
                     }
                     else {
                         System.out.println("Request status: " + status + " [NOT OK]");
-                        writer.write(SERVER_ERROR);
+                        writer.write(Functional.SERVER_ERROR);
                     }
-                } else if (request[0] == GET_FILES) {
+                } else if (request[0] == Functional.GET_FILES) {
                     System.out.println("Request : get list of files");
                     sendListFiles();
                 }
             } catch (IOException ex) {
-                closeAll(socket, reader, writer, readerBigInteger, writeBigInteger);
+                closeAll(socket, reader, writer, readerObject, writerObject);
                 break;
             }
         }
     }
 
-    private static String getFileExtension(String fileName) {
-        int index = fileName.indexOf('.');
-        return index == -1? null : fileName.substring(index);
-    }
+//    private static String getFileExtension(String fileName) {
+//        int index = fileName.indexOf('.');
+//        return index == -1? null : fileName.substring(index);
+//    }
 
-    private String createFileOnServer(String fileName) {
-        String fullFileName = "/home/dasha/data/fileFromClients/";
-        File file = new File(fullFileName + fileName);
-        String fileNameWithoutExtension = fileName.replaceAll("\\.\\w+$", "");
-        String extension = getFileExtension(fileName);
-        int fileNo = 0;
-        try {
-            if (file.exists()) {
-                while(file.exists()){
-                    fileNo++;
-                    file = new File(fullFileName + fileNameWithoutExtension + "("  + fileNo + ")" + extension);
-                }
-            } else {
-                file.createNewFile();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return "";
-        }
-        return file.getPath();
-    }
+//    private String createFileOnServer(String fileName) {
+//        String fullFileName = "/home/dasha/data/fileFromClients/";
+//        File file = new File(fullFileName + fileName);
+//        String fileNameWithoutExtension = fileName.replaceAll("\\.\\w+$", "");
+//        String extension = getFileExtension(fileName);
+//        int fileNo = 0;
+//        try {
+//            while (!file.createNewFile()){
+//                fileNo++;
+//                file = new File(fullFileName + fileNameWithoutExtension + "("  + fileNo + ")" + extension);
+//            }
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//            return "";
+//        }
+//        return file.getPath();
+//    }
 
-    private void deleteFile(String fullFileName) {
-        File file = new File(fullFileName);
-        if(file.delete()){
-            System.out.println("[LOG] : " + fullFileName + " was deleted");
-        } else System.out.println("[LOG] : " + fullFileName + " don't exist");
-    }
+//    private void deleteFile(String fullFileName) {
+//        File file = new File(fullFileName);
+//        if(file.delete()){
+//            System.out.println("[LOG] : " + fullFileName + " was deleted");
+//        } else System.out.println("[LOG] : " + fullFileName + " don't exist");
+//    }
 
     private int uploadFile(String fileName, long sizeFile) {
-        String fullFileName = createFileOnServer(fileName);
+        String fullFileName = Functional.createFileOnServer(fileName);
         if ("".equals(fullFileName)) {
-            return SERVER_ERROR;
+            return Functional.SERVER_ERROR;
         }
         System.out.println("[LOG] : CREATE NEW FILE { " + fullFileName + " }");
         try (OutputStream writerToFile = new BufferedOutputStream(new FileOutputStream(fullFileName)))
-//        try(FileWriter writerToFile = new FileWriter(fullFileName, false))
         {
-            byte[] encryptText = new byte[SIZE_BLOCK_READ];
+            byte[] encryptText = new byte[Functional.SIZE_BLOCK_READ];
             int countByte = 0, read;
             while (countByte < sizeFile) {
-                 if ((read = reader.read(encryptText)) == -1) {
-                    deleteFile(fullFileName);
+                if ((read = reader.read(encryptText)) == -1) {
+                    Functional.deleteFile(fullFileName);
                     break;
-                 }
+                }
                 countByte += read;
                 if (countByte == sizeFile) {
-                    for (int i = 0; i < read - SIZE_BLOCK_CAMELLIA; i += SIZE_BLOCK_CAMELLIA) {
+                    for (int i = 0; i < read - Functional.SIZE_BLOCK_CAMELLIA; i += Functional.SIZE_BLOCK_CAMELLIA) {
                         writerToFile.write(symmetricalAlgoECB.decrypt(getArray128(encryptText, i)));
                     }
-                    byte[] decryptText = deletePadding(symmetricalAlgoECB.decrypt(getArray128(encryptText, read - SIZE_BLOCK_CAMELLIA)));
+                    byte[] decryptText = deletePadding(symmetricalAlgoECB.decrypt(getArray128(encryptText, read - Functional.SIZE_BLOCK_CAMELLIA)));
                     writerToFile.write(decryptText);
                 }
                 else {
-                    for (int i = 0; i < encryptText.length; i += SIZE_BLOCK_CAMELLIA) {
+                    for (int i = 0; i < encryptText.length; i += Functional.SIZE_BLOCK_CAMELLIA) {
                         writerToFile.write(symmetricalAlgoECB.decrypt(getArray128(encryptText, i)));
                     }
                 }
             }
             System.out.println("Read from client : " + countByte);
-//            addToList(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), sizeFile);
             listFileWithSize.put(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), sizeFile);
         }
         catch(IOException ex){
             ex.printStackTrace();
             System.out.println(ex.getMessage());
-            return SERVER_ERROR;
+            return Functional.SERVER_ERROR;
         }
-        return OK;
+        return Functional.OK;
     }
 
     private void sendListFiles() {
         try {
-            writeBigInteger.reset();
+            writerObject.reset();
             listFileWithSize.forEach((key, value) -> System.out.println(key + " " + value));
-            writeBigInteger.writeObject(listFileWithSize);
-            writeBigInteger.flush();
+            writerObject.writeObject(listFileWithSize);
+            writerObject.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
 
-    public void closeAll(Socket socket, InputStream reader, OutputStream writer, ObjectInputStream readerBigInteger, ObjectOutputStream writeBigInteger) {
+    public void closeAll(Socket socket, InputStream reader, OutputStream writer, ObjectInputStream readerObject, ObjectOutputStream writerObject) {
         try {
             if (reader != null) {
                 reader.close();
@@ -216,11 +198,11 @@ public class ClientHandler implements Runnable{
             if (socket != null) {
                 socket.close();
             }
-            if (readerBigInteger != null) {
-                readerBigInteger.close();
+            if (readerObject != null) {
+                readerObject.close();
             }
-            if (writeBigInteger != null) {
-                writeBigInteger.close();
+            if (writerObject != null) {
+                writerObject.close();
             }
         } catch (IOException ex) {
             ex.printStackTrace();

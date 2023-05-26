@@ -8,7 +8,7 @@ import static org.example.HelpFunction.*;
 public class CBCMode implements IModeCipher
 {
     private ISymmetricalCipher symmetricalAlgorithm;
-    private byte[] initializationVector;
+    private final byte[] initializationVector;
     private byte[] prevBlock;
 
     public CBCMode(ISymmetricalCipher c, byte[] IV)
@@ -27,9 +27,7 @@ public class CBCMode implements IModeCipher
     public byte[] encrypt(byte[] notCipherText)
     {
         reset();
-        byte[] copyInputArrayWithPadding = padding(notCipherText, 16);
-        try
-        {
+        try {
             for (int i = 0; i < notCipherText.length; i += 16)
             {
                 byte[] block = getArray128(notCipherText, i);
@@ -37,9 +35,8 @@ public class CBCMode implements IModeCipher
                 prevBlock = symmetricalAlgorithm.encrypt(block);
                 System.arraycopy(prevBlock, 0, notCipherText, i, 16);
             }
-        } catch (Exception e)
-        {
-            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return notCipherText;
     }
@@ -48,14 +45,17 @@ public class CBCMode implements IModeCipher
     public byte[] decrypt(byte[] cipherText)
     {
         reset();
-        for (int i = 0; i < cipherText.length; i += 16)
-        {
-            byte[] block = getArray128(cipherText, i);
-            var decrypt = symmetricalAlgorithm.decrypt(block);
-            System.arraycopy(XORByteArray(prevBlock, decrypt), 0, cipherText, i, 16);
-            prevBlock = block;
+        try {
+            for (int i = 0; i < cipherText.length; i += 16)
+            {
+                byte[] block = getArray128(cipherText, i);
+                var decrypt = symmetricalAlgorithm.decrypt(block);
+                System.arraycopy(XORByteArray(prevBlock, decrypt), 0, cipherText, i, 16);
+                prevBlock = block;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-//        cipherText = deletePadding(cipherText);
         return cipherText;
     }
     @Override

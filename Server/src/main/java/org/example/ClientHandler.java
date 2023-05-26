@@ -1,5 +1,6 @@
 package org.example;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.camellia.Camellia;
 import org.example.elgamal.ElgamalEncrypt;
 import org.example.elgamal.ElgamalKey;
@@ -10,17 +11,17 @@ import java.math.BigInteger;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.example.HelpFunction.*;
-
 public class ClientHandler implements Runnable{
 
-    private String pathToStorage = "/home/dasha/data/fileFromClients/";
+    private final String pathToStorage = "/home/dasha/data/fileFromClients/";
     private Socket socket;
     private InputStream reader;
     private OutputStream writer;
     private ObjectOutputStream writerObject;
     private ObjectInputStream readerObject;
     private D_Encryption symmetricalAlgo;
+    private ObjectMapper objectMapper;
+
     private ConcurrentHashMap<String, Long> listFileWithSize;
 
     public ClientHandler(Socket socket, ConcurrentHashMap<String, Long> listFileWithSize) {
@@ -31,8 +32,8 @@ public class ClientHandler implements Runnable{
             this.writerObject = new ObjectOutputStream(socket.getOutputStream());
             this.readerObject = new ObjectInputStream(socket.getInputStream());
             this.listFileWithSize = listFileWithSize;
-        } catch (IOException ex)
-        {
+            this.objectMapper = new ObjectMapper();
+        } catch (IOException ex) {
             closeAll(socket, reader, writer, readerObject, writerObject);
         }
     }
@@ -66,47 +67,24 @@ public class ClientHandler implements Runnable{
         symmetricalAlgo = new D_Encryption(new Camellia(camelliaSymmetricalKeyString), ModeCipher.ECB, camelliaSymmetricalKeyString);
         while (socket.isConnected()) {
             try {
-                byte[] request = new byte[1];
-                reader.read(request, 0, 1);
-                if (request[0] == Functional.UPLOAD)
+                int sizeRequest = reader.read();
+                byte[] requestByte = new byte[sizeRequest];
+                reader.read(requestByte);
+                Request request = objectMapper.readValue(requestByte, Request.class);
+                if (request.getRequestCode() == Functional.UPLOAD)
                 {
                     System.out.println("Request : upload file to server");
-                    // получили размер имени, а потом имя файла
-                    int lengthFileName = reader.read();
-                    request = new byte[lengthFileName];
-                    reader.read(request, 0, lengthFileName);
-
-                    // получили размер файла
-                    byte[] fileSizeBuf = new byte[8];
-                    reader.read(fileSizeBuf, 0, 8);
-                    long sizeFile = bytesToLong(fileSizeBuf);
-                    int status;
-                    if ((status = uploadFile(new String(request), sizeFile)) == Functional.OK){
-                        System.out.println("Request status: " + status + " [OK]");
-                        writer.write(Functional.OK);
-                        writer.flush();
-                    }
-                    else {
-                        System.out.println("Request status: " + status + " [NOT OK]");
-                        writer.write(Functional.SERVER_ERROR);
-                        writer.flush();
-                    }
-                } else if (request[0] == Functional.DOWNLOAD) {
+                    int status = uploadFile(request.getFileName(), request.getSizeFileToSend());
+                    System.out.println("Request status: " + status + ((status == Functional.OK) ? " [OK]" : " [NOT OK]"));
+                    writer.write(status);
+                    writer.flush();
+                }
+                else if (request.getRequestCode() == Functional.DOWNLOAD) {
                     System.out.println("Request : download file to client");
-                    // получили размер имени, а потом имя файла
-                    int lengthFileName = reader.read();
-                    request = new byte[lengthFileName];
-                    reader.read(request, 0, lengthFileName);
-                    int status;
-                    if ((status = downloadFile(new String(request))) == Functional.OK){
-                        System.out.println("Request status: " + status + " [OK]");
-                    }
-                    else {
-                        System.out.println("Request status: " + status + " [NOT OK]");
-                        writer.write(status);
-                        writer.flush();
-                    }
-                } else if (request[0] == Functional.GET_FILES) {
+                    int status = downloadFile(request.getFileName(), request.getSizeFileToSend());
+                    System.out.println("Request status: " + status + ((status == Functional.OK) ? " [OK]" : " [NOT OK]"));
+                }
+                else if (request.getRequestCode() == Functional.GET_FILES) {
                     System.out.println("Request : get list of files");
                     sendListFiles();
                 }
@@ -126,7 +104,7 @@ public class ClientHandler implements Runnable{
         try {
             long sizeUploadFiles = Functional.uploadFile(fullFileName, sizeFile, symmetricalAlgo, reader);
             System.out.println("Read from client : " + sizeUploadFiles);
-            listFileWithSize.put(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), sizeFile);
+            listFileWithSize.put(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), new File(fullFileName).length());
         }
         catch(IOException ex){
             ex.printStackTrace();
@@ -136,9 +114,9 @@ public class ClientHandler implements Runnable{
         return Functional.OK;
     }
 
-    private int downloadFile(String fileName) {
+    private int downloadFile(String fileName, long sizeFile) {
         File file = new File(pathToStorage + fileName);
-        if (!file.exists()) {
+        if (!file.exists() || file.length() != sizeFile) {
             return Functional.FILE_IS_NOT_EXIST;
         }
         try {
@@ -155,7 +133,6 @@ public class ClientHandler implements Runnable{
     private void sendListFiles() {
         try {
             writerObject.reset();
-            listFileWithSize.forEach((key, value) -> System.out.println(key + " " + value));
             writerObject.writeObject(listFileWithSize);
             writerObject.flush();
         } catch (IOException e) {

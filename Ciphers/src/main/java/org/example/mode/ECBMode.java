@@ -1,6 +1,7 @@
 package org.example.mode;
 
-import org.example.camellia.Camellia;
+import org.example.camellia.ISymmetricalCipher;
+import org.example.mode.IModeCipher;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -9,14 +10,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.example.HelpFunction.*;
+import static org.example.HelpFunction.getArray128;
 
 public class ECBMode implements IModeCipher
 {
-    private Camellia symmetricalAlgorithm;
+    private ISymmetricalCipher symmetricalAlgorithm;
+//    private Camellia symmetricalAlgorithm;
     private int processors;
 
-    public ECBMode(Camellia symmetricalAlgorithm)
+    public ECBMode(ISymmetricalCipher symmetricalAlgorithm)
     {
         this.symmetricalAlgorithm = symmetricalAlgorithm;
         this.processors = Runtime.getRuntime().availableProcessors();
@@ -29,14 +31,12 @@ public class ECBMode implements IModeCipher
         List<Future<byte[]>> encryptedBlocksFutures = new LinkedList<>();
 
 //        byte[] copyInputArrayWithPadding = padding(notCipherText, 16);
-//
+
 //        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
 //        {
 //            byte[] block = getArray128(copyInputArrayWithPadding, i);
 //            encryptedBlocksFutures.add(service.submit(() -> symmetricalAlgorithm.encrypt(block)));
 //        }
-//        service.shutdown();
-//        return getArrayFromExecutors(encryptedBlocksFutures, copyInputArrayWithPadding.length);
 
         for (int i = 0; i < notCipherText.length; i += 16)
         {
@@ -45,7 +45,6 @@ public class ECBMode implements IModeCipher
         }
         service.shutdown();
         return getArrayFromExecutors(encryptedBlocksFutures, notCipherText.length);
-
     }
 
     @Override

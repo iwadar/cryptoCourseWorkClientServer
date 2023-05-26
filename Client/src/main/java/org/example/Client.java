@@ -3,7 +3,7 @@ package org.example;
 import org.example.camellia.*;
 import org.example.elgamal.ElgamalEncrypt;
 import org.example.elgamal.ElgamalKey;
-import org.example.mode.ECBMode;
+import org.example.mode.ModeCipher;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -19,8 +19,7 @@ public class Client {
     private OutputStream writer;
     private ObjectOutputStream writerObject;
     private ObjectInputStream readerObject;
-    private Camellia symmetricalAlgo;
-    private ECBMode symmetricalAlgoECB;
+    private D_Encryption symmetricalAlgo;
 
     public Client(Socket socket) {
         try {
@@ -39,10 +38,8 @@ public class Client {
             var decryptElgamalKey = elgamalEncrypt.encrypt(camelliaSecretKeyString.getBytes());
             writerObject.writeObject(decryptElgamalKey);
             writerObject.flush();
-            CamelliaKey camelliaKey = new CamelliaKey();
-            camelliaKey.generateKeys(camelliaSecretKeyString);
-            symmetricalAlgo = new Camellia(camelliaKey);
-            symmetricalAlgoECB = new ECBMode(symmetricalAlgo);
+//          // TODO: ПЕРЕДАЕМ ВЕКТОР ИНИЦИАЛИЗАЦИИ!!!!
+            symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.ECB, camelliaSecretKeyString);
         } catch (IOException | ClassNotFoundException ex)
         {
             closeAll(socket, reader, writer, readerObject, writerObject);
@@ -75,34 +72,9 @@ public class Client {
         try {
             if (socket.isConnected()) {
                 sendStartInformation(fullFileName, Functional.UPLOAD);
-                byte[] data = new byte[Functional.SIZE_BLOCK_READ];
-                int read, countRead = 0;
-                try (FileInputStream readerFromFile = new FileInputStream(fullFileName))
-                {
-                    while ((read = readerFromFile.read(data)) != -1) {
-                        if (read < Functional.SIZE_BLOCK_READ)
-                        {
-                            int fullBlock = (read / Functional.SIZE_BLOCK_CAMELLIA) * Functional.SIZE_BLOCK_CAMELLIA;
-                            for (int i = 0; i < fullBlock; i += Functional.SIZE_BLOCK_CAMELLIA) {
-                                System.arraycopy(symmetricalAlgoECB.encrypt(getArray128(data, i)), 0, data, i, Functional.SIZE_BLOCK_CAMELLIA);
-                            }
-                            byte[] newData = getArray128(data, fullBlock);
-                            padding(newData, Functional.SIZE_BLOCK_CAMELLIA, read - fullBlock);
-                            countRead += fullBlock + newData.length;
-                            System.arraycopy(symmetricalAlgoECB.encrypt(newData), 0, data, fullBlock, Functional.SIZE_BLOCK_CAMELLIA);
-                            writer.write(Arrays.copyOfRange(data, 0, fullBlock + newData.length));
-                            writer.flush();
-                        }
-                        else {
-                            for (int i = 0; i < data.length; i += Functional.SIZE_BLOCK_CAMELLIA) {
-                                System.arraycopy(symmetricalAlgoECB.encrypt(getArray128(data, i)), 0, data, i, Functional.SIZE_BLOCK_CAMELLIA);
-                            }
-                            writer.write(data);
-                            writer.flush();
-                            countRead += read;
-                        }
-                    }
-                    System.out.println("[LOG] : SEND (byte) : " + countRead);
+                try {
+                    long countRead = Functional.downloadFile(fullFileName, symmetricalAlgo, writer);
+                    System.out.println("[LOG] : SEND (bytes) : " + countRead);
                 }
                 catch(IOException ex){
                     System.out.println(ex.getMessage());
@@ -120,13 +92,22 @@ public class Client {
         }
     }
 
-    public void downloadFile(String directoryToLoad, String fileName) {
-        sendStartInformation(fileName, Functional.DOWNLOAD);
-//        try {
-//
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        }
+    public void downloadFile(String directoryToLoad, String fileName, long getFileSize) {
+        String fullFileName = Functional.createFileOnCompute(directoryToLoad, fileName);
+        if ("".equals(fullFileName)) {
+            return;
+        }
+        System.out.println("[LOG] : CREATE NEW FILE { " + fullFileName + " }");
+        try {
+            sendStartInformation(fileName, Functional.DOWNLOAD);
+            long sizeFile = getFileSize + (Functional.SIZE_BLOCK_CAMELLIA - getFileSize % Functional.SIZE_BLOCK_CAMELLIA);
+            long sizeUploadFiles = Functional.uploadFile(fullFileName, sizeFile, symmetricalAlgo, reader);
+            System.out.println("Read from server : " + sizeUploadFiles);
+        }
+        catch(IOException ex){
+            ex.printStackTrace();
+            System.out.println(ex.getMessage());
+        }
     }
 
     public ConcurrentHashMap getListFile() {
@@ -165,7 +146,7 @@ public class Client {
 
     public static void main(String[] args) {
         try (
-                Socket clientSocket = new Socket("127.0.0.1", 8081)
+                Socket clientSocket = new Socket("127.0.0.1", 8082)
         ) {
             Client c = new Client(clientSocket);
             c.sendFile("/home/dasha/Pictures/face.jpg");
@@ -174,9 +155,11 @@ public class Client {
 //            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
 //            System.out.println("-----------------------------------------------");
 
-//            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
-//            System.out.println("-----------------------------------------------");
-//            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
+            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
+            System.out.println("-----------------------------------------------");
+            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
+            c.downloadFile("/home/dasha/data/fileFromServer/", "bla(3).txt", 10031);
+
 //            c.downloadFile("bla.txt");
         }catch (IOException ex)
         {

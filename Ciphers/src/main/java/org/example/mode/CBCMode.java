@@ -1,16 +1,17 @@
 package org.example.mode;
 
-import org.example.camellia.Camellia;
+import org.example.camellia.ISymmetricalCipher;
+import org.example.mode.IModeCipher;
 
 import static org.example.HelpFunction.*;
 
 public class CBCMode implements IModeCipher
 {
-    private Camellia symmetricalAlgorithm;
+    private ISymmetricalCipher symmetricalAlgorithm;
     private byte[] initializationVector;
     private byte[] prevBlock;
 
-    public CBCMode(Camellia c, byte[] IV)
+    public CBCMode(ISymmetricalCipher c, byte[] IV)
     {
         symmetricalAlgorithm = c;
         this.initializationVector = IV;
@@ -29,18 +30,18 @@ public class CBCMode implements IModeCipher
         byte[] copyInputArrayWithPadding = padding(notCipherText, 16);
         try
         {
-            for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
+            for (int i = 0; i < notCipherText.length; i += 16)
             {
-                byte[] block = getArray128(copyInputArrayWithPadding, i);
+                byte[] block = getArray128(notCipherText, i);
                 block = XORByteArray(block, prevBlock);
                 prevBlock = symmetricalAlgorithm.encrypt(block);
-                System.arraycopy(prevBlock, 0, copyInputArrayWithPadding, i, 16);
+                System.arraycopy(prevBlock, 0, notCipherText, i, 16);
             }
         } catch (Exception e)
         {
             System.out.println(e.getMessage());
         }
-        return copyInputArrayWithPadding;
+        return notCipherText;
     }
 
     @Override
@@ -54,7 +55,7 @@ public class CBCMode implements IModeCipher
             System.arraycopy(XORByteArray(prevBlock, decrypt), 0, cipherText, i, 16);
             prevBlock = block;
         }
-        cipherText = deletePadding(cipherText);
+//        cipherText = deletePadding(cipherText);
         return cipherText;
     }
     @Override

@@ -16,6 +16,11 @@ public class Camellia implements ISymmetricalCipher{
     {
         this.key = k;
     }
+    public Camellia(String camelliaSymmetricalKeyString)
+    {
+        this.key = new CamelliaKey();
+        this.key.generateKeys(camelliaSymmetricalKeyString);
+    }
 
     @Override
     public byte[] encrypt(byte[] text)

@@ -1,28 +1,26 @@
 package org.example;
 
 import org.example.camellia.Camellia;
-import org.example.camellia.CamelliaKey;
 import org.example.elgamal.ElgamalEncrypt;
 import org.example.elgamal.ElgamalKey;
-import org.example.mode.ECBMode;
+import org.example.mode.ModeCipher;
 
 import java.io.*;
 import java.math.BigInteger;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.example.HelpFunction.*;
 
 public class ClientHandler implements Runnable{
+
+    private String pathToStorage = "/home/dasha/data/fileFromClients/";
     private Socket socket;
     private InputStream reader;
     private OutputStream writer;
     private ObjectOutputStream writerObject;
     private ObjectInputStream readerObject;
-    private Camellia symmetricalAlgo;
-    private ECBMode symmetricalAlgoECB;
+    private D_Encryption symmetricalAlgo;
     private ConcurrentHashMap<String, Long> listFileWithSize;
 
     public ClientHandler(Socket socket, ConcurrentHashMap<String, Long> listFileWithSize) {
@@ -64,11 +62,8 @@ public class ClientHandler implements Runnable{
     @Override
     public void run() {
         String camelliaSymmetricalKeyString = keyExchange();
-        CamelliaKey camelliaKey = new CamelliaKey();
-        camelliaKey.generateKeys(camelliaSymmetricalKeyString);
-        symmetricalAlgo = new Camellia(camelliaKey);
-        symmetricalAlgoECB = new ECBMode(symmetricalAlgo);
-
+        // TODO: передавать вектор инициализации!!!!!!!!!!
+        symmetricalAlgo = new D_Encryption(new Camellia(camelliaSymmetricalKeyString), ModeCipher.ECB, camelliaSymmetricalKeyString);
         while (socket.isConnected()) {
             try {
                 byte[] request = new byte[1];
@@ -89,10 +84,27 @@ public class ClientHandler implements Runnable{
                     if ((status = uploadFile(new String(request), sizeFile)) == Functional.OK){
                         System.out.println("Request status: " + status + " [OK]");
                         writer.write(Functional.OK);
+                        writer.flush();
                     }
                     else {
                         System.out.println("Request status: " + status + " [NOT OK]");
                         writer.write(Functional.SERVER_ERROR);
+                        writer.flush();
+                    }
+                } else if (request[0] == Functional.DOWNLOAD) {
+                    System.out.println("Request : download file to client");
+                    // получили размер имени, а потом имя файла
+                    int lengthFileName = reader.read();
+                    request = new byte[lengthFileName];
+                    reader.read(request, 0, lengthFileName);
+                    int status;
+                    if ((status = downloadFile(new String(request))) == Functional.OK){
+                        System.out.println("Request status: " + status + " [OK]");
+                    }
+                    else {
+                        System.out.println("Request status: " + status + " [NOT OK]");
+                        writer.write(status);
+                        writer.flush();
                     }
                 } else if (request[0] == Functional.GET_FILES) {
                     System.out.println("Request : get list of files");
@@ -105,70 +117,35 @@ public class ClientHandler implements Runnable{
         }
     }
 
-//    private static String getFileExtension(String fileName) {
-//        int index = fileName.indexOf('.');
-//        return index == -1? null : fileName.substring(index);
-//    }
-
-//    private String createFileOnServer(String fileName) {
-//        String fullFileName = "/home/dasha/data/fileFromClients/";
-//        File file = new File(fullFileName + fileName);
-//        String fileNameWithoutExtension = fileName.replaceAll("\\.\\w+$", "");
-//        String extension = getFileExtension(fileName);
-//        int fileNo = 0;
-//        try {
-//            while (!file.createNewFile()){
-//                fileNo++;
-//                file = new File(fullFileName + fileNameWithoutExtension + "("  + fileNo + ")" + extension);
-//            }
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//            return "";
-//        }
-//        return file.getPath();
-//    }
-
-//    private void deleteFile(String fullFileName) {
-//        File file = new File(fullFileName);
-//        if(file.delete()){
-//            System.out.println("[LOG] : " + fullFileName + " was deleted");
-//        } else System.out.println("[LOG] : " + fullFileName + " don't exist");
-//    }
-
     private int uploadFile(String fileName, long sizeFile) {
-        String fullFileName = Functional.createFileOnServer(fileName);
+        String fullFileName = Functional.createFileOnCompute(pathToStorage, fileName);
         if ("".equals(fullFileName)) {
             return Functional.SERVER_ERROR;
         }
         System.out.println("[LOG] : CREATE NEW FILE { " + fullFileName + " }");
-        try (OutputStream writerToFile = new BufferedOutputStream(new FileOutputStream(fullFileName)))
-        {
-            byte[] encryptText = new byte[Functional.SIZE_BLOCK_READ];
-            int countByte = 0, read;
-            while (countByte < sizeFile) {
-                if ((read = reader.read(encryptText)) == -1) {
-                    Functional.deleteFile(fullFileName);
-                    break;
-                }
-                countByte += read;
-                if (countByte == sizeFile) {
-                    for (int i = 0; i < read - Functional.SIZE_BLOCK_CAMELLIA; i += Functional.SIZE_BLOCK_CAMELLIA) {
-                        writerToFile.write(symmetricalAlgoECB.decrypt(getArray128(encryptText, i)));
-                    }
-                    byte[] decryptText = deletePadding(symmetricalAlgoECB.decrypt(getArray128(encryptText, read - Functional.SIZE_BLOCK_CAMELLIA)));
-                    writerToFile.write(decryptText);
-                }
-                else {
-                    for (int i = 0; i < encryptText.length; i += Functional.SIZE_BLOCK_CAMELLIA) {
-                        writerToFile.write(symmetricalAlgoECB.decrypt(getArray128(encryptText, i)));
-                    }
-                }
-            }
-            System.out.println("Read from client : " + countByte);
+        try {
+            long sizeUploadFiles = Functional.uploadFile(fullFileName, sizeFile, symmetricalAlgo, reader);
+            System.out.println("Read from client : " + sizeUploadFiles);
             listFileWithSize.put(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), sizeFile);
         }
         catch(IOException ex){
             ex.printStackTrace();
+            System.out.println(ex.getMessage());
+            return Functional.SERVER_ERROR;
+        }
+        return Functional.OK;
+    }
+
+    private int downloadFile(String fileName) {
+        File file = new File(pathToStorage + fileName);
+        if (!file.exists()) {
+            return Functional.FILE_IS_NOT_EXIST;
+        }
+        try {
+            long countWrite = Functional.downloadFile(pathToStorage + fileName, symmetricalAlgo, writer);
+            System.out.println("[LOG] : SEND (bytes) : " + countWrite);
+        }
+        catch(IOException ex){
             System.out.println(ex.getMessage());
             return Functional.SERVER_ERROR;
         }

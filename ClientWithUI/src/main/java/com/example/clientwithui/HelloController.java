@@ -1,16 +1,13 @@
 package com.example.clientwithui;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.MapValueFactory;
 import javafx.util.Callback;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
@@ -58,9 +55,7 @@ public class HelloController implements Initializable {
     }
 
     private void setDataInTable() {
-        System.out.println("[LOG] : setDataInTable");
         ConcurrentHashMap<String, Long> listFiles = client.getListFile();
-        System.out.println("from controller");
         listFiles.forEach((key, value) -> System.out.println(key + " " + value));
         if (listFiles == null) {
             table.setPlaceholder(new Label("Files not uploaded yet"));
@@ -76,12 +71,9 @@ public class HelloController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
-            System.out.println("I am here");
             Socket clientSocket = new Socket("127.0.0.1", 8080);
             client = new Client(clientSocket);
-            System.out.println("I am here1");
 
-//            ConcurrentHashMap<String, Long> listFiles = client.getListFile();
             column1 = new TableColumn<>("File name");
             column1.setPrefWidth(710);
             column1.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Map.Entry<String, Long>, String>, ObservableValue<String>>() {
@@ -94,8 +86,8 @@ public class HelloController implements Initializable {
                 }
             });
 
-            column2 = new TableColumn<>("File size (byte)");
-            column2.setPrefWidth(116);
+            column2 = new TableColumn<>("File size (bytes)");
+            column2.setPrefWidth(120);
             column2.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Map.Entry<String, Long>, Long>, ObservableValue<Long>>() {
 
                 @Override

@@ -1,16 +1,16 @@
 package com.example.clientwithui.mode;
 
-import com.example.clientwithui.camellia.Camellia;
+import com.example.clientwithui.camellia.ISymmetricalCipher;
 
-import static org.example.HelpFunction.*;
+import static com.example.clientwithui.HelpFunction.*;
 
 public class CBCMode implements IModeCipher
 {
-    private Camellia symmetricalAlgorithm;
-    private byte[] initializationVector;
+    private ISymmetricalCipher symmetricalAlgorithm;
+    private final byte[] initializationVector;
     private byte[] prevBlock;
 
-    public CBCMode(Camellia c, byte[] IV)
+    public CBCMode(ISymmetricalCipher c, byte[] IV)
     {
         symmetricalAlgorithm = c;
         this.initializationVector = IV;
@@ -26,35 +26,35 @@ public class CBCMode implements IModeCipher
     public byte[] encrypt(byte[] notCipherText)
     {
         reset();
-        byte[] copyInputArrayWithPadding = padding(notCipherText, 16);
-        try
-        {
-            for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
+        try {
+            for (int i = 0; i < notCipherText.length; i += 16)
             {
-                byte[] block = getArray128(copyInputArrayWithPadding, i);
+                byte[] block = getArray128(notCipherText, i);
                 block = XORByteArray(block, prevBlock);
                 prevBlock = symmetricalAlgorithm.encrypt(block);
-                System.arraycopy(prevBlock, 0, copyInputArrayWithPadding, i, 16);
+                System.arraycopy(prevBlock, 0, notCipherText, i, 16);
             }
-        } catch (Exception e)
-        {
-            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return copyInputArrayWithPadding;
+        return notCipherText;
     }
 
     @Override
     public byte[] decrypt(byte[] cipherText)
     {
         reset();
-        for (int i = 0; i < cipherText.length; i += 16)
-        {
-            byte[] block = getArray128(cipherText, i);
-            var decrypt = symmetricalAlgorithm.decrypt(block);
-            System.arraycopy(XORByteArray(prevBlock, decrypt), 0, cipherText, i, 16);
-            prevBlock = block;
+        try {
+            for (int i = 0; i < cipherText.length; i += 16)
+            {
+                byte[] block = getArray128(cipherText, i);
+                var decrypt = symmetricalAlgorithm.decrypt(block);
+                System.arraycopy(XORByteArray(prevBlock, decrypt), 0, cipherText, i, 16);
+                prevBlock = block;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        cipherText = deletePadding(cipherText);
         return cipherText;
     }
     @Override

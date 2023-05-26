@@ -1,7 +1,6 @@
 package com.example.clientwithui.camellia;
 
-import static org.example.HelpFunction.getLongFrom128Byte;
-import static org.example.HelpFunction.twoLongToOneByteArray;
+import static com.example.clientwithui.HelpFunction.*;
 
 public class Camellia implements ISymmetricalCipher {
     public static final long MASK8 = 0xffL;
@@ -15,6 +14,11 @@ public class Camellia implements ISymmetricalCipher {
     public Camellia(CamelliaKey k)
     {
         this.key = k;
+    }
+    public Camellia(String camelliaSymmetricalKeyString)
+    {
+        this.key = new CamelliaKey();
+        this.key.generateKeys(camelliaSymmetricalKeyString);
     }
 
     @Override

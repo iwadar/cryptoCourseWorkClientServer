@@ -1,6 +1,6 @@
 package com.example.clientwithui.mode;
 
-import com.example.clientwithui.camellia.Camellia;
+import com.example.clientwithui.camellia.ISymmetricalCipher;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -9,14 +9,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.example.HelpFunction.getArray128;
+import static com.example.clientwithui.HelpFunction.getArray128;
+
 
 public class ECBMode implements IModeCipher
 {
-    private Camellia symmetricalAlgorithm;
-    private int processors;
+    private final ISymmetricalCipher symmetricalAlgorithm;
+    private final int processors;
 
-    public ECBMode(Camellia symmetricalAlgorithm)
+    public ECBMode(ISymmetricalCipher symmetricalAlgorithm)
     {
         this.symmetricalAlgorithm = symmetricalAlgorithm;
         this.processors = Runtime.getRuntime().availableProcessors();
@@ -28,16 +29,6 @@ public class ECBMode implements IModeCipher
         ExecutorService service = Executors.newFixedThreadPool(processors);
         List<Future<byte[]>> encryptedBlocksFutures = new LinkedList<>();
 
-//        byte[] copyInputArrayWithPadding = padding(notCipherText, 16);
-//
-//        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
-//        {
-//            byte[] block = getArray128(copyInputArrayWithPadding, i);
-//            encryptedBlocksFutures.add(service.submit(() -> symmetricalAlgorithm.encrypt(block)));
-//        }
-//        service.shutdown();
-//        return getArrayFromExecutors(encryptedBlocksFutures, copyInputArrayWithPadding.length);
-
         for (int i = 0; i < notCipherText.length; i += 16)
         {
             byte[] block = getArray128(notCipherText, i);
@@ -45,7 +36,6 @@ public class ECBMode implements IModeCipher
         }
         service.shutdown();
         return getArrayFromExecutors(encryptedBlocksFutures, notCipherText.length);
-
     }
 
     @Override
@@ -59,25 +49,21 @@ public class ECBMode implements IModeCipher
         }
         service.shutdown();
         cipherText = getArrayFromExecutors(encryptedBlocksFutures, cipherText.length);
-//        cipherText = deletePadding(cipherText);
         return cipherText;
     }
     private static byte[] getArrayFromExecutors(List<Future<byte[]>> encryptedBlocksFutures, int lengthOfText)
     {
         byte[] result = new byte[lengthOfText];
         int i = 0;
-        try
-        {
+        try {
             for (var futureBufToWrite : encryptedBlocksFutures)
             {
                 byte[] encrypted = futureBufToWrite.get();
                 System.arraycopy(encrypted, 0, result, i, 16);
                 i += 16;
             }
-        }
-        catch (ExecutionException | InterruptedException e)
-        {
-            System.out.println("ERROR in getArrayFromExecutors()");
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
         }
         return result;
     }

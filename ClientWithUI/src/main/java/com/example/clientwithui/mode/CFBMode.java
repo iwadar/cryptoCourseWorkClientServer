@@ -2,8 +2,7 @@ package com.example.clientwithui.mode;
 
 import com.example.clientwithui.camellia.Camellia;
 
-import static org.example.HelpFunction.*;
-
+import static com.example.clientwithui.HelpFunction.*;
 public class CFBMode implements IModeCipher
 {
     private Camellia symmetricalAlgorithm;

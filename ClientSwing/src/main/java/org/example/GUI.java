@@ -2,6 +2,7 @@ package org.example;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +15,7 @@ public class GUI extends JFrame {
 
     private static final String host = "127.0.0.1";
     private static final int port = 8080;
-    private String[] columnName = {"Name file", "Size file", "Progress"};
+    private static String[] columnName = {"Name file", "Size file", "Progress"};
     private static Object[][] dataServerTable;
     private static Object[][] dataClientTable;
     private static JScrollPane scrollPaneServer;
@@ -40,7 +41,7 @@ public class GUI extends JFrame {
         }
     }
 
-    public Object[][] getData(Client client) {
+    public static Object[][] getData(Client client) {
 
         ConcurrentHashMap dataFile = client.getListFile();
         Object[][] dataServerTable = new Object[dataFile.size()][columnName.length];
@@ -74,35 +75,27 @@ public class GUI extends JFrame {
         JPanel buttonGroup = new JPanel();
         downloadButton = new JButton("Download");
         uploadButton = new JButton("Upload");
-        rebootButton = new JButton("Reboot storage");
+        rebootButton = new JButton("Refresh");
         buttonGroup.add(downloadButton);
         buttonGroup.add(uploadButton);
         buttonGroup.add(rebootButton);
         buttonGroup.setBorder(new EmptyBorder(1, 1, 1, 1));
 
         downloadButton.addActionListener(new ListenerActionDownload(host, port, tableServer));
+        uploadButton.addActionListener(new ListenerActionUpload(host, port, tableClient));
+        rebootButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try (Socket clientSocket = new Socket(host, port)) {
+                    Client client = new Client(clientSocket);
+                    dataServerTable = getData(client);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                tableServer.updateTable(dataServerTable);
+            }
+        });
 
-//        System.out.println("createAndShow : " + (client.socket.isClosed() ? "close":"not close"));
-//        downloadButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent actionEvent) {
-//                System.out.println("action : " + (client.socket.isClosed() ? "close":"not close"));
-//            }
-//
-//        });
-
-
-//        uploadButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent actionEvent) {
-//                JFileChooser jFileChooser = new JFileChooser();
-//                jFileChooser.setDialogTitle("Choose file for upload");
-//                if (jFileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-//                    listUpload.add(jFileChooser.getSelectedFile());
-//                    System.out.println("[LOG] : choose file " + jFileChooser.getSelectedFile().getAbsoluteFile());
-//                }
-//            }
-//        });
         frame.add(buttonGroup);
         frame.setVisible(true);
     }

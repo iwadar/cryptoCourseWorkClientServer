@@ -9,8 +9,6 @@ c
 Ciphers/pom.xml,e/3/e332a28b60635ebde2302707134a15326a6270ca
 a
 1Functional/src/main/java/org/example/Request.java,f/b/fbe87fd21611e9a1504496db40e380b57600841d
-d
-4Functional/src/main/java/org/example/Functional.java,1/2/12600d15c46f5da1f36f82b4fd43a58263c2525c
 c
 3Ciphers/src/main/java/org/example/D_Encryption.java,5/2/52b5e33ccb30a37bedcab2f332eeed478baa64e4
 c

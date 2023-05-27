@@ -2,6 +2,7 @@ package org.example;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import org.example.camellia.Camellia;
 import org.example.elgamal.ElgamalEncrypt;
 import org.example.elgamal.ElgamalKey;
@@ -13,9 +14,9 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.example.HelpFunction.generateRandomString;
-
+@Getter
 public class Client {
-    public Socket socket;
+    private Socket socket;
     private InputStream reader;
     private OutputStream writer;
     private ObjectOutputStream writerObject;
@@ -47,11 +48,11 @@ public class Client {
             closeAll(socket, reader, writer, readerObject, writerObject);
         }
     }
-    byte[] pojoToJsonString(Request request) throws JsonProcessingException {
+    private byte[] pojoToJsonString(Request request) throws JsonProcessingException {
         return this.objectMapper.writeValueAsString(request).getBytes();
     }
 
-    private void sendStartInformation(String fullFileName, int state, long fileSize) {
+    public void sendStartInformation(String fullFileName, int state, long fileSize) {
         File file = new File(fullFileName);
         String fileName = file.getName();
         if (state == Functional.UPLOAD) {
@@ -102,7 +103,6 @@ public class Client {
         }
         catch(IOException ex){
             ex.printStackTrace();
-            System.out.println(ex.getMessage());
         }
     }
 

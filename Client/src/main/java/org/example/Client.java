@@ -148,15 +148,15 @@ public class Client {
                 Socket clientSocket = new Socket("127.0.0.1", 8080)
         ) {
             Client c = new Client(clientSocket);
-            c.sendFile("/home/dasha/Pictures/face.jpg");
-            System.out.println("-----------------------------------------------");
-//            Thread.sleep(6000);
-            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
-            System.out.println("-----------------------------------------------");
-
-            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
-            System.out.println("-----------------------------------------------");
-            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
+//            c.sendFile("/home/dasha/Pictures/face.jpg");
+//            System.out.println("-----------------------------------------------");
+////            Thread.sleep(6000);
+//            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
+//            System.out.println("-----------------------------------------------");
+//
+//            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
+//            System.out.println("-----------------------------------------------");
+//            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
             c.downloadFile("/home/dasha/data/fileFromServer/", "bla.txt", 10031);
 
 //            c.downloadFile("bla.txt");

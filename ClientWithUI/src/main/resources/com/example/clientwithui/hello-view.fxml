@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -51,37 +50,19 @@
             </Hyperlink>
          </children>
       </HBox>
-      <HBox layoutX="14.0" layoutY="440.0" prefHeight="63.0" prefWidth="826.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
-         <padding>
-            <Insets top="10.0" />
-         </padding>
-         <children>
-            <ProgressBar fx:id="progressBar" prefHeight="43.0" prefWidth="672.0" progress="0.0">
-               <HBox.margin>
-                  <Insets left="10.0" />
-               </HBox.margin>
-            </ProgressBar>
-            <Button fx:id="btCancel" mnemonicParsing="false" onAction="#actionCancel" prefHeight="40.0" prefWidth="136.0" text="Cancel" textAlignment="CENTER" textFill="#1b42bf">
-               <HBox.margin>
-                  <Insets left="10.0" right="10.0" />
-               </HBox.margin>
-               <font>
-                  <Font name="Ubuntu Thin" size="21.0" />
-               </font>
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-            </Button>
-         </children>
-      </HBox>
-      <TableView fx:id="table" layoutX="14.0" layoutY="74.0" prefHeight="374.0" prefWidth="810.0" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="74.0">
-<!--        <columns>-->
-<!--          <TableColumn fx:id="tableNameFile" prefWidth="710.0" text="Name file" />-->
-<!--          <TableColumn fx:id="tableSizeFile" minWidth="0.0" prefWidth="116.0" text="Size file" />-->
-<!--        </columns>-->
-         <padding>
-            <Insets bottom="10.0" top="2.0" />
-         </padding>
-      </TableView>
+      <TabPane layoutX="14.0" layoutY="59.0" prefHeight="452.0" prefWidth="826.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Untitled Tab 1">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+          <Tab text="Untitled Tab 2">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
    </children>
 </AnchorPane>

@@ -10,6 +10,7 @@
         <module name="Ciphers" />
         <module name="Server" />
         <module name="Client" />
+        <module name="ClientSwing" />
         <module name="ClientWithUI" />
       </profile>
     </annotationProcessing>

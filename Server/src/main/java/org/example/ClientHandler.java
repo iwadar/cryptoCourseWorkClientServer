@@ -93,6 +93,7 @@ public class ClientHandler implements Runnable{
                 break;
             }
         }
+        System.out.println("[LOG] : client has disconnected");
     }
 
     private int uploadFile(String fileName, long sizeFile) {

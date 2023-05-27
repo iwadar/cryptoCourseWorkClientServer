@@ -1,0 +1,11 @@
+
+U
+java:S1118	":Add a private constructor to hide the implicit public one.(αΑπωÿÿÿÿ
+i
+java:S4042."NUse "java.nio.file.Files#delete" here for better messages on error conditions.(λ“«ψÿÿÿÿ
+S	java:S106/"9Replace this use of System.out or System.err by a logger.(α‰β»όÿÿÿÿ
+S	java:S1060"9Replace this use of System.out or System.err by a logger.(οί†¬όÿÿÿÿ
+r
+java:S2737K"WAdd logic to this catch clause or eliminate it and rethrow the exception automatically.(¤­—Ξώÿÿÿÿ
+r
+java:S2737p"WAdd logic to this catch clause or eliminate it and rethrow the exception automatically.(¤­—Ξώÿÿÿÿ

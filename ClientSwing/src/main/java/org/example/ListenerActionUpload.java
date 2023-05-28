@@ -27,7 +27,6 @@ public class ListenerActionUpload implements ActionListener {
             System.out.println("[LOG] : choose file " + fileName[0].getAbsoluteFile());
         }
         if (fileName[0] != null) {
-            System.out.println(fileName[0]);
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {

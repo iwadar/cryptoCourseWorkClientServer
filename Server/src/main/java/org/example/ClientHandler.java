@@ -105,7 +105,7 @@ public class ClientHandler implements Runnable{
         try {
             long sizeUploadFiles = Functional.uploadFile(fullFileName, sizeFile, symmetricalAlgo, reader);
             System.out.println("Read from client : " + sizeUploadFiles);
-            listFileWithSize.put(fullFileName.substring(fullFileName.lastIndexOf('/') + 1, fullFileName.length() - 1), new File(fullFileName).length());
+            listFileWithSize.put(fullFileName.substring(fullFileName.lastIndexOf('/') + 1), new File(fullFileName).length());
         }
         catch(IOException ex){
             ex.printStackTrace();

@@ -7,8 +7,6 @@ c
 3Ciphers/src/main/java/org/example/HelpFunction.java,9/f/9f1271851852da7ba92d5b513ec30fc0a1d20762
 ?
 Ciphers/pom.xml,e/3/e332a28b60635ebde2302707134a15326a6270ca
-a
-1Functional/src/main/java/org/example/Request.java,f/b/fbe87fd21611e9a1504496db40e380b57600841d
 c
 3Ciphers/src/main/java/org/example/D_Encryption.java,5/2/52b5e33ccb30a37bedcab2f332eeed478baa64e4
 c
@@ -19,8 +17,6 @@ s
 CClientWithUI/src/main/java/com/example/clientwithui/Functional.java,8/e/8e040f7216aa57d84693d4436d7efdeac585dc0f
 >
 Client/pom.xml,0/a/0a4c3742bc724bd9658ec7c94f6f621e2586d444
-A
-.attach_pid305533,5/0/5015fb917621e0231710b01874a6f2e91e8d66f1
 >
 Server/pom.xml,2/6/262e4293dc6f4a41c54ae987de45ac17569f95d0
 B
@@ -51,3 +47,5 @@ y
 IClientWithUI/src/main/java/com/example/clientwithui/HelloApplication.java,0/3/03989b938e3c9fcc73f260652cc886cb5cb5adc1
 C
 ClientSwing/pom.xml,f/f/ff25b1b289b6c6a8488740db714bc941e6bf4174
+x
+HClientWithUI/src/main/java/com/example/clientwithui/HelloController.java,e/6/e665e64b48e7371b2320affc321238a484da7673

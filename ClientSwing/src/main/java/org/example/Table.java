@@ -56,6 +56,7 @@ public class Table {
 
     public void updateTable(Object[][] newData) {
         this.model.setRowCount(0);
+        this.data = newData;
         for (int i = 0; i < newData.length; i++) {
             this.model.addRow(newData[i]);
         }
@@ -102,6 +103,7 @@ public class Table {
                                     writerToFile.write(symmetricalAlgo.decrypt(getArray128(encryptText, i)));
                                 }
                             }
+                            writerToFile.flush();
                         }
                     }
                     publish(100);

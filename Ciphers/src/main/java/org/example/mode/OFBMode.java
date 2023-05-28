@@ -1,19 +1,20 @@
 package org.example.mode;
 
 import org.example.camellia.Camellia;
+import org.example.camellia.ISymmetricalCipher;
 
 import static org.example.HelpFunction.*;
 
 public class OFBMode implements IModeCipher
 {
 
-    private Camellia symmetricalAlgorithm;
+    private ISymmetricalCipher symmetricalAlgorithm;
     private byte[] initializationVector;
     private byte[] prevBlock;
 
-    public OFBMode(Camellia c, byte[] IV)
+    public OFBMode(ISymmetricalCipher c, byte[] IV)
     {
-        symmetricalAlgorithm = c;
+        this.symmetricalAlgorithm = c;
         this.initializationVector = IV;
         this.prevBlock = IV;
     }
@@ -27,19 +28,16 @@ public class OFBMode implements IModeCipher
     public byte[] encrypt(byte[] notCipherText)
     {
         reset();
-        byte[] copyInputArrayWithPadding = padding(notCipherText, 16);
-        try
-        {
-            for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
+        try {
+            for (int i = 0; i < notCipherText.length; i += 16)
             {
-               prevBlock = symmetricalAlgorithm.encrypt(prevBlock);
-               System.arraycopy(XORByteArray(prevBlock, getArray128(copyInputArrayWithPadding, i)), 0, copyInputArrayWithPadding, i, 16);
+                prevBlock = symmetricalAlgorithm.encrypt(prevBlock);
+                System.arraycopy(XORByteArray(prevBlock, getArray128(notCipherText, i)), 0, notCipherText, i, 16);
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        return copyInputArrayWithPadding;
+        return notCipherText;
     }
 
     @Override
@@ -54,7 +52,6 @@ public class OFBMode implements IModeCipher
             System.arraycopy(XORByteArray(prevBlock, block), 0, cipherText, i, 16);
             prevBlock = symmetricalAlgorithm.encrypt(prevBlock);
         }
-        cipherText = deletePadding(cipherText);
         return cipherText;
     }
 

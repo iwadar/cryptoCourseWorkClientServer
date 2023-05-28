@@ -1,6 +1,7 @@
 package org.example.mode;
 
 import org.example.camellia.Camellia;
+import org.example.camellia.ISymmetricalCipher;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -16,7 +17,7 @@ import static org.example.HelpFunction.*;
 
 public class CTRMode implements IModeCipher
 {
-    private Camellia symmetricalAlgorithm;
+    private ISymmetricalCipher symmetricalAlgorithm;
     private int processors;
     private byte[] initializationVector;
     private int halfLen;
@@ -24,7 +25,7 @@ public class CTRMode implements IModeCipher
     private int mod;
     private int ctr;
 
-    public CTRMode(Camellia symmetricalAlgorithm, byte[] IV)
+    public CTRMode(ISymmetricalCipher symmetricalAlgorithm, byte[] IV)
     {
         this.processors = Runtime.getRuntime().availableProcessors();
         this.symmetricalAlgorithm = symmetricalAlgorithm;
@@ -40,11 +41,10 @@ public class CTRMode implements IModeCipher
     {
         ExecutorService service = Executors.newFixedThreadPool(processors);
         List<Future<byte[]>> encryptedBlocksFutures = new LinkedList<>();
-        byte[] copyInputArrayWithPadding = padding(notCipherText, 16);
 
-        for (int i = 0; i < copyInputArrayWithPadding.length; i += 16)
+        for (int i = 0; i < notCipherText.length; i += 16)
         {
-            byte[] block = getArray128(copyInputArrayWithPadding, i);
+            byte[] block = getArray128(notCipherText, i);
             encryptedBlocksFutures.add(service.submit(() -> {
                 int shift = ctr;
                 byte[] encCtr = symmetricalAlgorithm.encrypt(shiftHalf(shift));
@@ -56,7 +56,7 @@ public class CTRMode implements IModeCipher
             }));
         }
         service.shutdown();
-        return getArrayFromExecutors(encryptedBlocksFutures, copyInputArrayWithPadding.length);
+        return getArrayFromExecutors(encryptedBlocksFutures, notCipherText.length);
     }
 
     @Override
@@ -79,7 +79,6 @@ public class CTRMode implements IModeCipher
         }
         service.shutdown();
         cipherText = getArrayFromExecutors(encryptedBlocksFutures, cipherText.length);
-        cipherText = deletePadding(cipherText);
         return cipherText;
     }
 

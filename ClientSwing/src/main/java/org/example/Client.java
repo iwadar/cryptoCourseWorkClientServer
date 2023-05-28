@@ -47,9 +47,8 @@ public class Client {
             writer.write(initializationVector.getBytes());
             writer.flush();
 
-            symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.ECB, camelliaSecretKeyString);
-        } catch (IOException | ClassNotFoundException ex)
-        {
+            symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.CTR, initializationVector);
+        } catch (IOException | ClassNotFoundException ex) {
             closeAll(socket, reader, writer, readerObject, writerObject);
         }
     }

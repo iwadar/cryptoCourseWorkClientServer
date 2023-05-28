@@ -96,6 +96,5 @@ public class HelpFunction {
         {
             notCipherText[sizeFullElem + i] = (byte)lengthPadding;
         }
-        return;
     }
 }

@@ -45,7 +45,7 @@ public class Client {
 
             writer.write(initializationVector.getBytes());
             writer.flush();
-            symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.ECB, camelliaSecretKeyString);
+            symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.CBC, initializationVector);
         } catch (IOException | ClassNotFoundException ex)
         {
             closeAll(socket, reader, writer, readerObject, writerObject);
@@ -160,7 +160,7 @@ public class Client {
                 Socket clientSocket = new Socket("127.0.0.1", 8080)
         ) {
             Client c = new Client(clientSocket);
-            c.sendFile("/home/dasha/Pictures/face.jpg");
+//            c.sendFile("/home/dasha/Pictures/face.jpg");
 //            System.out.println("-----------------------------------------------");
 ////            Thread.sleep(6000);
 //            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));

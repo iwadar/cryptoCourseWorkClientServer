@@ -7,5 +7,3 @@ c	java:S1001"NRename this method name to match the regular expression '^[a-z][
 N	java:S1065"9Replace this use of System.out or System.err by a logger.(ÞÁŒ×
 9
 java:S2119K"Save and re-use this "Random".(¶“¶ˆÿÿÿÿÿ
-1
-java:S3626c"Remove this redundant jump.(ûÁÝ…

@@ -94,13 +94,16 @@ public class Functional {
                     padding(newData, Functional.SIZE_BLOCK_CAMELLIA, read - fullBlock);
                     countRead += fullBlock + newData.length;
                     System.arraycopy(symmetricalAlgo.encrypt(newData), 0, data, fullBlock, Functional.SIZE_BLOCK_CAMELLIA);
-                    writer.write(Arrays.copyOfRange(data, 0, fullBlock + newData.length));
+                    data = Arrays.copyOfRange(data, 0, fullBlock + newData.length);
+                    System.out.println(new String(data));
+                    writer.write(data);
                     writer.flush();
                 }
                 else {
                     for (int i = 0; i < data.length; i += Functional.SIZE_BLOCK_CAMELLIA) {
                         System.arraycopy(symmetricalAlgo.encrypt(getArray128(data, i)), 0, data, i, Functional.SIZE_BLOCK_CAMELLIA);
                     }
+                    System.out.println(new String(data));
                     writer.write(data);
                     writer.flush();
                     countRead += read;

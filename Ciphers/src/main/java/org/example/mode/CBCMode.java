@@ -13,7 +13,7 @@ public class CBCMode implements IModeCipher
 
     public CBCMode(ISymmetricalCipher c, byte[] IV)
     {
-        symmetricalAlgorithm = c;
+        this.symmetricalAlgorithm = c;
         this.initializationVector = IV;
         this.prevBlock = IV;
     }

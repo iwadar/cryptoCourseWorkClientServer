@@ -65,7 +65,7 @@ public class ClientHandler implements Runnable{
     @Override
     public void run() {
         String[] cipherKeys = keyExchange();
-        symmetricalAlgo = new D_Encryption(new Camellia(cipherKeys[0]), ModeCipher.ECB, cipherKeys[1]);
+        symmetricalAlgo = new D_Encryption(new Camellia(cipherKeys[0]), ModeCipher.CTR, cipherKeys[1]);
         while (socket.isConnected()) {
             try {
                 int sizeRequest = reader.read();

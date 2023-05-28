@@ -1,10 +1,7 @@
 package org.example;
 
 import org.example.camellia.ISymmetricalCipher;
-import org.example.mode.CBCMode;
-import org.example.mode.ECBMode;
-import org.example.mode.IModeCipher;
-import org.example.mode.ModeCipher;
+import org.example.mode.*;
 
 public class D_Encryption {
     private final ISymmetricalCipher algorithm;
@@ -26,16 +23,12 @@ public class D_Encryption {
                 return new ECBMode(algorithm);
             case CBC:
                 return new CBCMode(algorithm, initVector);
-//            case CFB:
-//                return new ModeCFB(algo, initVector);
-//            case OFB:
-//                return new ModeOFB(algo, initVector);
-//            case CTR:
-//                return new ModeCTR(algo, initVector);
-//            case RD:
-//                return new ModeRD(algo, initVector);
-//            case RDH:
-//                return new ModeRDH(algo, initVector);
+            case CFB:
+                return new CFBMode(algorithm, initVector);
+            case OFB:
+                return new OFBMode(algorithm, initVector);
+            case CTR:
+                return new CTRMode(algorithm, initVector);
         }
         return new ECBMode(algorithm);
     }

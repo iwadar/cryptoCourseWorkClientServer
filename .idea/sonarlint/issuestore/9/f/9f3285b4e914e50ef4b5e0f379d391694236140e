@@ -1,0 +1,19 @@
+
+L
+java:S3740y"/Provide the parametrized type for this generic.(Æ³ª…8 ªĞ—†1
+R
+java:S3740…"/Provide the parametrized type for this generic.(£ûªışÿÿÿÿ8¢ªĞ—†1
+Ÿ
+java:S1319y"The return type of this method should be an interface such as "ConcurrentMap" rather than the implementation "ConcurrentHashMap".(Æ³ª…8§ªĞ—†1
+U	java:S106P"9Replace this use of System.out or System.err by a logger.(¬â‰æ8É«Ğ—†1
+S	java:S106S"9Replace this use of System.out or System.err by a logger.(™¢$8Ë«Ğ—†1
+U	java:S106V"9Replace this use of System.out or System.err by a logger.(·ìÿî8Ì«Ğ—†1
+Z	java:S106d"9Replace this use of System.out or System.err by a logger.(Ã…©Ğúÿÿÿÿ8Ñ«Ğ—†1
+l
+java:S2674i"JCheck the return value of the "read" call to see how many bytes were read.(æÔ¾Áşÿÿÿÿ8Ó«Ğ—†1
+Z	java:S106l"9Replace this use of System.out or System.err by a logger.(Î¢·¥ÿÿÿÿÿ8Ö«Ğ—†1
+Z	java:S106q"9Replace this use of System.out or System.err by a logger.(÷¼½Úıÿÿÿÿ8Ø«Ğ—†1
+Z	java:S106u"9Replace this use of System.out or System.err by a logger.(ı™øøÿÿÿÿ8Ú«Ğ—†1
+Y	java:S125£"<This block of commented-out lines of code should be removed.(³×Õõ8ŞĞŠ™†1
+^	java:S125®"<This block of commented-out lines of code should be removed.(ŠñİŒÿÿÿÿÿ8ó«Ğ—†1
+^	java:S125³"<This block of commented-out lines of code should be removed.(ıø¥§şÿÿÿÿ8õ«Ğ—†1

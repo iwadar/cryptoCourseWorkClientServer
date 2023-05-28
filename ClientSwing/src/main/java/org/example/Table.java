@@ -111,6 +111,7 @@ public class Table {
                             if (countByte == sizeFile) {
                                 for (int i = 0; i < read - Functional.SIZE_BLOCK_CAMELLIA; i += Functional.SIZE_BLOCK_CAMELLIA) {
                                     writerToFile.write(symmetricalAlgo.decrypt(getArray128(encryptText, i)));
+                                    writerToFile.flush();
                                 }
                                 byte[] decryptText = deletePadding(symmetricalAlgo.decrypt(getArray128(encryptText, read - Functional.SIZE_BLOCK_CAMELLIA)));
                                 writerToFile.write(decryptText);

@@ -36,12 +36,17 @@ public class Client {
             BigInteger[] publicKey = (BigInteger[]) readerObject.readObject();
             // приняли публичный ключ, создали экземпляр ключа для шифрования, создали объект класса Эль Шамаля, чтобы шифрануть симметричный ключ
             String camelliaSecretKeyString = generateRandomString(32);
+            String initializationVector = generateRandomString(Functional.SIZE_BLOCK_CAMELLIA);
+
             ElgamalKey elgamalPublicKey = new ElgamalKey(publicKey[0], publicKey[1], publicKey[2]);
             ElgamalEncrypt elgamalEncrypt = new ElgamalEncrypt(elgamalPublicKey);
             var decryptElgamalKey = elgamalEncrypt.encrypt(camelliaSecretKeyString.getBytes());
             writerObject.writeObject(decryptElgamalKey);
             writerObject.flush();
-         // TODO: ПЕРЕДАЕМ ВЕКТОР ИНИЦИАЛИЗАЦИИ!!!!
+
+            writer.write(initializationVector.getBytes());
+            writer.flush();
+
             symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.ECB, camelliaSecretKeyString);
         } catch (IOException | ClassNotFoundException ex)
         {

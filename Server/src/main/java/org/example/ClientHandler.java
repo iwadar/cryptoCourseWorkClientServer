@@ -1,5 +1,6 @@
 package org.example;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.camellia.Camellia;
 import org.example.elgamal.ElgamalEncrypt;
@@ -21,7 +22,6 @@ public class ClientHandler implements Runnable{
     private ObjectInputStream readerObject;
     private D_Encryption symmetricalAlgo;
     private ObjectMapper objectMapper;
-
     private ConcurrentHashMap<String, Long> listFileWithSize;
 
     public ClientHandler(Socket socket, ConcurrentHashMap<String, Long> listFileWithSize) {
@@ -38,17 +38,19 @@ public class ClientHandler implements Runnable{
         }
     }
 
-    private String keyExchange() {
+    private String[] keyExchange() {
         ElgamalKey k = new ElgamalKey();
         k.generateKey();
         ElgamalEncrypt elgamalCipher = new ElgamalEncrypt(k);
         StringBuilder camelliaSymmetricalKeyString = new StringBuilder();
+        byte[] initVector = new byte[Functional.SIZE_BLOCK_CAMELLIA];
         try {
             BigInteger[] publicKey = {k.getPublicKey().getP(), k.getPublicKey().getG(), k.getPublicKey().getY()};
             writerObject.writeObject(publicKey);
             writerObject.flush();
             BigInteger[] encryptSymmetricalKey = (BigInteger[]) readerObject.readObject();
 
+            reader.read(initVector);
             encryptSymmetricalKey = elgamalCipher.decrypt(encryptSymmetricalKey);
 
             for (var number: encryptSymmetricalKey) {
@@ -57,14 +59,13 @@ public class ClientHandler implements Runnable{
         } catch (IOException | ClassNotFoundException ex) {
             closeAll(socket, reader, writer, readerObject, writerObject);
         }
-        return camelliaSymmetricalKeyString.toString();
+        return new String[]{camelliaSymmetricalKeyString.toString(), new String(initVector)};
     }
 
     @Override
     public void run() {
-        String camelliaSymmetricalKeyString = keyExchange();
-        // TODO: передавать вектор инициализации!!!!!!!!!!
-        symmetricalAlgo = new D_Encryption(new Camellia(camelliaSymmetricalKeyString), ModeCipher.ECB, camelliaSymmetricalKeyString);
+        String[] cipherKeys = keyExchange();
+        symmetricalAlgo = new D_Encryption(new Camellia(cipherKeys[0]), ModeCipher.ECB, cipherKeys[1]);
         while (socket.isConnected()) {
             try {
                 int sizeRequest = reader.read();
@@ -115,12 +116,30 @@ public class ClientHandler implements Runnable{
         return Functional.OK;
     }
 
+    byte[] pojoToJsonString(Response response) throws JsonProcessingException {
+        return this.objectMapper.writeValueAsString(response).getBytes();
+    }
+
+    private void sendStartInfo(int codeOperation, String fileName, long sizeFile, int status) {
+        Response response = new Response(codeOperation, fileName, sizeFile, status);
+        try {
+            byte[] responseInBytes = pojoToJsonString(response);
+            writer.write(responseInBytes.length);
+            writer.write(responseInBytes);
+            writer.flush();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     private int downloadFile(String fileName, long sizeFile) {
         File file = new File(pathToStorage + fileName);
         if (!file.exists() || file.length() != sizeFile) {
+            sendStartInfo(Functional.DOWNLOAD, fileName, sizeFile, Functional.FILE_IS_NOT_EXIST);
             return Functional.FILE_IS_NOT_EXIST;
         }
         try {
+            sendStartInfo(Functional.DOWNLOAD, fileName, sizeFile, Functional.OK);
             long countWrite = Functional.downloadFile(pathToStorage + fileName, symmetricalAlgo, writer);
             System.out.println("[LOG] : SEND (bytes) : " + countWrite);
         }

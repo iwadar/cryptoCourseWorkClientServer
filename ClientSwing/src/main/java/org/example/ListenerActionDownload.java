@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+
 @RequiredArgsConstructor
 public class ListenerActionDownload implements ActionListener {
     @NonNull
@@ -29,7 +31,13 @@ public class ListenerActionDownload implements ActionListener {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                table.startTaskDownload(host, port, "/home/dasha/data/fileFromServer/", fileName, sizeFile, row);
+                String path = System.getProperty("user.home") + "/Downloads/fileFromStorage/";
+
+                File theDir = new File(path);
+                if (!theDir.exists()){
+                    theDir.mkdirs();
+                }
+                table.startTaskDownload(host, port, path, fileName, sizeFile, row);
             }
         });
     }

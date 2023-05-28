@@ -1,7 +1,8 @@
 package org.example;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -10,14 +11,13 @@ import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.Random;
 
 import static org.example.HelpFunction.*;
 
 public class Table {
 
-    private String[] columnNames = {"Name file", "Size file", "Progress"};
-    private Object[][] data = {};
+    private String[] columnNames = {"Name file", "Size file (bytes)", "Progress"};
+    private Object[][] data;
     private DefaultTableModel model;
 
     private JTable table;
@@ -45,6 +45,7 @@ public class Table {
             }
         };
         this.table = new JTable(model);
+        this.table.setSelectionBackground(Color.ORANGE);
     }
 
     public int getSelectedRow() {
@@ -73,13 +74,26 @@ public class Table {
                     Client client = new Client(clientSocket);
                     InputStream reader = client.getReader();
                     D_Encryption symmetricalAlgo = client.getSymmetricalAlgo();
+                    ObjectMapper objectMapper = client.getObjectMapper();
 
                     String fullFileName = Functional.createFileOnCompute(directoryToLoad, fileName);
                     if ("".equals(fullFileName)) {
+                        publish(-1);
                         return -1;
                     }
                     System.out.println("[LOG] : CREATE NEW FILE { " + fullFileName + " }");
                     client.sendStartInformation(fileName, Functional.DOWNLOAD, getFileSize);
+                    int sizeResponse = reader.read();
+                    byte[] responseByte = new byte[sizeResponse];
+                    reader.read(responseByte);
+                    Response response = objectMapper.readValue(responseByte, Response.class);
+                    if (response.getStatus() >= Functional.SERVER_ERROR) {
+                        System.out.println("Server error: " + response.getStatus() + " [NOT OK]");
+                        publish(-1);
+                        JOptionPane.showMessageDialog(null, "Oooops, this file is not on the server or the server has crashed :'(" );
+                        Functional.deleteFile(fullFileName);
+                        return -1;
+                    }
                     long sizeFile = getFileSize + (Functional.SIZE_BLOCK_CAMELLIA - getFileSize % Functional.SIZE_BLOCK_CAMELLIA);
                     long countByte = 0;
                     int read;
@@ -88,6 +102,8 @@ public class Table {
                         while (countByte < sizeFile) {
                             if ((read = reader.read(encryptText)) == -1) {
                                 Functional.deleteFile(fullFileName);
+                                publish(-1);
+                                JOptionPane.showMessageDialog(null, "Oooops, the server has crashed :'(" );
                                 break;
                             }
                             publish((int) (countByte * 100 / sizeFile));
@@ -231,6 +247,7 @@ class ProgressRenderer extends DefaultTableCellRenderer {
     public ProgressRenderer() {
         super();
         setOpaque(true);
+        b.setForeground(Color.GREEN);
         b.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
     }
 

@@ -35,12 +35,16 @@ public class Client {
             BigInteger[] publicKey = (BigInteger[]) readerObject.readObject();
             // приняли публичный ключ, создали экземпляр ключа для шифрования, создали объект класса Эль Шамаля, чтобы шифрануть симметричный ключ
             String camelliaSecretKeyString = generateRandomString(32);
+            String initializationVector = generateRandomString(Functional.SIZE_BLOCK_CAMELLIA);
+
             ElgamalKey elgamalPublicKey = new ElgamalKey(publicKey[0], publicKey[1], publicKey[2]);
             ElgamalEncrypt elgamalEncrypt = new ElgamalEncrypt(elgamalPublicKey);
             var decryptElgamalKey = elgamalEncrypt.encrypt(camelliaSecretKeyString.getBytes());
             writerObject.writeObject(decryptElgamalKey);
             writerObject.flush();
-//          // TODO: ПЕРЕДАЕМ ВЕКТОР ИНИЦИАЛИЗАЦИИ!!!!
+
+            writer.write(initializationVector.getBytes());
+            writer.flush();
             symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.ECB, camelliaSecretKeyString);
         } catch (IOException | ClassNotFoundException ex)
         {
@@ -96,6 +100,14 @@ public class Client {
         System.out.println("[LOG] : CREATE NEW FILE { " + fullFileName + " }");
         try {
             sendStartInformation(fileName, Functional.DOWNLOAD, getFileSize);
+            int sizeResponse = reader.read();
+            byte[] responseByte = new byte[sizeResponse];
+            reader.read(responseByte);
+            Response response = objectMapper.readValue(responseByte, Response.class);
+            if (response.getStatus() >= Functional.SERVER_ERROR) {
+                System.out.println("Server error: " + response.getStatus() + " [NOT OK]");
+                return;
+            }
             long sizeFile = getFileSize + (Functional.SIZE_BLOCK_CAMELLIA - getFileSize % Functional.SIZE_BLOCK_CAMELLIA);
             long sizeUploadFiles = Functional.uploadFile(fullFileName, sizeFile, symmetricalAlgo, reader);
             System.out.println("Read from server : " + sizeUploadFiles);
@@ -148,7 +160,7 @@ public class Client {
                 Socket clientSocket = new Socket("127.0.0.1", 8080)
         ) {
             Client c = new Client(clientSocket);
-//            c.sendFile("/home/dasha/Pictures/face.jpg");
+            c.sendFile("/home/dasha/Pictures/face.jpg");
 //            System.out.println("-----------------------------------------------");
 ////            Thread.sleep(6000);
 //            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
@@ -157,7 +169,7 @@ public class Client {
 //            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
 //            System.out.println("-----------------------------------------------");
 //            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
-            c.downloadFile("/home/dasha/data/fileFromServer/", "prostye-pravila.pdf", 6473508);
+            c.downloadFile("/home/dasha/data/fileFromServer/", "bla.txt", 10031);
 
 //            c.downloadFile("bla.txt");
         }catch (IOException ex)

@@ -18,13 +18,6 @@ public class Server {
         this.listFileWithSize = new ConcurrentHashMap<>();
     }
 
-//    public static ConcurrentHashMap<String, Long> getListFileWithSize() {
-//        return listFileWithSize;
-//    }
-
-//    public static void addToList(String fileName, Long size) {
-//        listFileWithSize.put(fileName, size);
-//    }
     public void startServer() {
         final File folder = new File("/home/dasha/data/fileFromClients");
         for (final File fileEntry : folder.listFiles()) {

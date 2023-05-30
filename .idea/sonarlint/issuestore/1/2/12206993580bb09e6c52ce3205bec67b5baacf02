@@ -1,15 +1,13 @@
 
-`	java:S112c"FDefine and throw a dedicated exception instead of using a generic one.(¼ÿ¾¹ÿÿÿÿÿ
+`	java:S112\"FDefine and throw a dedicated exception instead of using a generic one.(¼ÿ¾¹ÿÿÿÿÿ
 H
 java:S3010"-Remove this assignment of "listFileWithSize".(ŸÓ®¿øÿÿÿÿ
 P
 java:S2209"5Change this instance-reference to a static reference.(ŸÓ®¿øÿÿÿÿ
-Q	java:S125"<This block of commented-out lines of code should be removed.(ÈñÐ
-V	java:S125"<This block of commented-out lines of code should be removed.(Œª×Šÿÿÿÿÿ
 W
-java:S1075"ARefactor your code to get this URI from a customizable parameter.(œ£‚â
-S	java:S106&"9Replace this use of System.out or System.err by a logger.(§ìºƒÿÿÿÿÿ
-S	java:S106?"9Replace this use of System.out or System.err by a logger.(ïëèÖýÿÿÿÿ
-Q	java:S125B"<This block of commented-out lines of code should be removed.(î¯ÔÉ
+java:S1075"ARefactor your code to get this URI from a customizable parameter.(œ£‚â
+S	java:S106"9Replace this use of System.out or System.err by a logger.(§ìºƒÿÿÿÿÿ
+S	java:S1068"9Replace this use of System.out or System.err by a logger.(ïëèÖýÿÿÿÿ
+Q	java:S125;"<This block of commented-out lines of code should be removed.(î¯ÔÉ
 I
 java:S1128".Remove this unused import 'java.util.HashMap'.(™˜”€ùÿÿÿÿ

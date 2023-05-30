@@ -1,0 +1,6 @@
+
+k	java:S117"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÆÛ‚‹ùÿÿÿÿ
+k	java:S117"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(º¥íœùÿÿÿÿ
+Z	java:S106&"9Replace this use of System.out or System.err by a logger.(©þêÜúÿÿÿÿ8òë¼ †1
+W
+java:S1128":Remove this unused import 'org.example.camellia.Camellia'.(¨‚©‘8ðØ» †1

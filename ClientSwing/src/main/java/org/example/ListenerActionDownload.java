@@ -27,7 +27,9 @@ public class ListenerActionDownload implements ActionListener {
             return;
         }
         String fileName = table.getModel().getValueAt(row, column).toString();
+        System.out.println(fileName);
         long sizeFile = Long.parseLong((table.getModel().getValueAt(row, column + 1).toString()));
+        System.out.println(sizeFile);
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {

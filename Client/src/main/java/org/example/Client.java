@@ -45,7 +45,7 @@ public class Client {
 
             writer.write(initializationVector.getBytes());
             writer.flush();
-            symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.CBC, initializationVector);
+            symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.ECB, initializationVector);
         } catch (IOException | ClassNotFoundException ex)
         {
             closeAll(socket, reader, writer, readerObject, writerObject);
@@ -169,7 +169,7 @@ public class Client {
 //            c.sendFile("/home/dasha/data/fileFromClients/bla.txt");
 //            System.out.println("-----------------------------------------------");
 //            c.getListFile().forEach((key, value) -> System.out.println(key + " " + value));
-            c.downloadFile("/home/dasha/data/fileFromServer/", "bla.txt", 10031);
+            c.downloadFile("/home/dasha/Downloads/fileFromStorage/", "konflikt-eto-podarok.pdf", 2939731);
 
 //            c.downloadFile("bla.txt");
         }catch (IOException ex)

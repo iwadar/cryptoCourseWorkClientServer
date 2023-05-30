@@ -84,6 +84,7 @@ public class Table {
                     System.out.println("[LOG] : CREATE NEW FILE { " + fullFileName + " }");
                     client.sendStartInformation(fileName, Functional.DOWNLOAD, getFileSize);
                     int sizeResponse = reader.read();
+                    System.out.println("sizeResponce:" + sizeResponse);
                     byte[] responseByte = new byte[sizeResponse];
                     reader.read(responseByte);
                     Response response = objectMapper.readValue(responseByte, Response.class);
@@ -95,38 +96,77 @@ public class Table {
                         return -1;
                     }
                     long sizeFile = getFileSize + (Functional.SIZE_BLOCK_CAMELLIA - getFileSize % Functional.SIZE_BLOCK_CAMELLIA);
-                    long countByte = 0;
-                    int read;
+                    System.out.println("getFileSize: " + getFileSize);
+                    System.out.println("sizeFile " + sizeFile);
+                    long countByte = 0;//, countWrite = 0, prev = 0;
+                    int read = 0;
+                    int totalBytesRead = 0;
                     try (OutputStream writerToFile = new BufferedOutputStream(new FileOutputStream(fullFileName))) {
                         byte[] encryptText = new byte[Functional.SIZE_BLOCK_READ];
+
                         while (countByte < sizeFile) {
-                            if ((read = reader.read(encryptText)) == -1) {
-                                Functional.deleteFile(fullFileName);
-                                publish(-1);
-                                JOptionPane.showMessageDialog(null, "Oooops, the server has crashed :'(" );
-                                break;
-                            }
-                            publish((int) (countByte * 100 / sizeFile));
-                            countByte += read;
-                            if (countByte == sizeFile) {
-                                for (int i = 0; i < read - Functional.SIZE_BLOCK_CAMELLIA; i += Functional.SIZE_BLOCK_CAMELLIA) {
-                                    writerToFile.write(symmetricalAlgo.decrypt(getArray128(encryptText, i)));
-                                    writerToFile.flush();
+                            while(totalBytesRead < Functional.SIZE_BLOCK_READ && countByte != sizeFile) {
+                                read = reader.read(encryptText, totalBytesRead, Functional.SIZE_BLOCK_READ - totalBytesRead);
+                                if (read == -1) {
+                                    Functional.deleteFile(fullFileName);
+                                    publish(-1);
+                                    JOptionPane.showMessageDialog(null, "Oooops, the server has crashed :'(" );
+                                    break;
                                 }
-                                byte[] decryptText = deletePadding(symmetricalAlgo.decrypt(getArray128(encryptText, read - Functional.SIZE_BLOCK_CAMELLIA)));
+                                totalBytesRead += read;
+                                countByte += read;
+                            }
+//                            countByte += totalBytesRead;
+//                            if ((read = reader.read(encryptText, 0, Functional.SIZE_BLOCK_READ)) == -1) {
+//                                Functional.deleteFile(fullFileName);
+//                                publish(-1);
+//                                JOptionPane.showMessageDialog(null, "Oooops, the server has crashed :'(" );
+//                                break;
+//                            }
+//                            if (totalBytesRead != 2048) {
+//                                System.out.println("NOT 2048? else" + read);
+//                            }
+                            read = totalBytesRead;
+                            totalBytesRead = 0;
+                            publish((int) (countByte * 100 / sizeFile));
+//                            countByte += read;
+                            if (countByte == sizeFile) {
+                                System.out.println("countByte = " + countByte);
+                                System.out.println("read = "+ read);
+                                for (int i = 0; i < read - Functional.SIZE_BLOCK_CAMELLIA; i += Functional.SIZE_BLOCK_CAMELLIA) {
+                                    byte[] bla = symmetricalAlgo.decrypt(getArray128(encryptText, i));
+//                                    countWrite += bla.length;
+//                                    writerToFile.write(symmetricalAlgo.decrypt(getArray128(encryptText, i)));
+                                    writerToFile.write(bla);
+                                }
+//                                System.out.println("before padding: " + (countWrite));
+                                byte[] bla = symmetricalAlgo.decrypt(getArray128(encryptText, read - Functional.SIZE_BLOCK_CAMELLIA));
+//                                byte[] decryptText = deletePadding(symmetricalAlgo.decrypt(getArray128(encryptText, read - Functional.SIZE_BLOCK_CAMELLIA)));
+                                byte[] decryptText = deletePadding(bla);
+                                countWrite += decryptText.length;
+                                System.out.println("after padding: " + (countWrite - prev));
+                                System.out.println("len decrypt text = " + decryptText.length);
                                 writerToFile.write(decryptText);
                             } else {
                                 for (int i = 0; i < encryptText.length; i += Functional.SIZE_BLOCK_CAMELLIA) {
-                                    writerToFile.write(symmetricalAlgo.decrypt(getArray128(encryptText, i)));
+                                    byte[] bla = symmetricalAlgo.decrypt(getArray128(encryptText, i));
+                                    System.arraycopy(bla, 0, encryptText, i, Functional.SIZE_BLOCK_CAMELLIA);
+//                                    writerToFile.write(bla);
+                                    countWrite += bla.length;
                                 }
+                                writerToFile.write(encryptText);
+                                writerToFile.flush();
                             }
-                            writerToFile.flush();
+//                            System.out.println("countByte = " + countByte + ": " + (((countWrite - prev) == 2048 )? "" : "ERRRRROR" + countWrite ));
+                            prev = countWrite;
                         }
                     }
                     publish(100);
+                    System.out.println("Write to file " + countWrite);
                     System.out.println("Read from server : " + countByte);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    publish(-1);
                     return -1;
                 }
                 return 100;
@@ -211,6 +251,7 @@ public class Table {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    publish(-1);
                     return -1;
                 }
                 return 100;

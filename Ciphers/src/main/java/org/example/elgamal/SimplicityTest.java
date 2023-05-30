@@ -68,6 +68,14 @@ public class SimplicityTest implements ISimplicityTest
     }
 
     public boolean testFerma(BigInteger n, long k) {
+        if (n.equals(BigInteger.TWO))
+        {
+            return true;
+        }
+        if (n.compareTo(BigInteger.TWO) < 0)
+        {
+            return false;
+        }
         BigInteger a;
         for (long i = 0; i < k; i++)
         {
@@ -126,13 +134,22 @@ public class SimplicityTest implements ISimplicityTest
 
         for (long i = 0; i < k; i++) {
             BigInteger a = getRandomBase(n);
-            BigInteger exponent = n.subtract(BigInteger.ONE).divide(BigInteger.TWO);
-            BigInteger jacobi = BigInteger.valueOf(J(a, n));
             if (!a.gcd(n).equals(BigInteger.ONE)) {
                 return false;
             }
-            if (!a.modPow(exponent, n).equals(jacobi)) {
-                return false;
+            BigInteger exponent = n.subtract(BigInteger.ONE).divide(BigInteger.TWO);
+            int jacobi = J(a, n);
+            BigInteger a1 = a.modPow(exponent, n);
+
+            if (jacobi == 1) {
+                if (!a1.equals(BigInteger.ONE)) {
+                    return false;
+                }
+            }
+            else if (jacobi == -1) {
+                if (!a1.equals(n.subtract(BigInteger.ONE))) {
+                    return false;
+                }
             }
         }
         return true;

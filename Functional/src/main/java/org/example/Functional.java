@@ -88,22 +88,23 @@ public class Functional {
                 {
                     int fullBlock = (read / Functional.SIZE_BLOCK_CAMELLIA) * Functional.SIZE_BLOCK_CAMELLIA;
                     for (int i = 0; i < fullBlock; i += Functional.SIZE_BLOCK_CAMELLIA) {
-                        System.arraycopy(symmetricalAlgo.encrypt(getArray128(data, i)), 0, data, i, Functional.SIZE_BLOCK_CAMELLIA);
+                        byte[] encr = symmetricalAlgo.encrypt(getArray128(data, i));
+                        System.arraycopy(encr, 0, data, i, Functional.SIZE_BLOCK_CAMELLIA);
                     }
                     byte[] newData = getArray128(data, fullBlock);
                     padding(newData, Functional.SIZE_BLOCK_CAMELLIA, read - fullBlock);
                     countRead += fullBlock + newData.length;
-                    System.arraycopy(symmetricalAlgo.encrypt(newData), 0, data, fullBlock, Functional.SIZE_BLOCK_CAMELLIA);
+                    byte[] bla1 = symmetricalAlgo.encrypt(newData);
+                    System.arraycopy(bla1, 0, data, fullBlock, Functional.SIZE_BLOCK_CAMELLIA);
                     data = Arrays.copyOfRange(data, 0, fullBlock + newData.length);
-                    System.out.println(new String(data));
                     writer.write(data);
                     writer.flush();
                 }
                 else {
                     for (int i = 0; i < data.length; i += Functional.SIZE_BLOCK_CAMELLIA) {
-                        System.arraycopy(symmetricalAlgo.encrypt(getArray128(data, i)), 0, data, i, Functional.SIZE_BLOCK_CAMELLIA);
+                        byte[] bla = symmetricalAlgo.encrypt(getArray128(data, i));
+                        System.arraycopy(bla, 0, data, i, Functional.SIZE_BLOCK_CAMELLIA);
                     }
-                    System.out.println(new String(data));
                     writer.write(data);
                     writer.flush();
                     countRead += read;

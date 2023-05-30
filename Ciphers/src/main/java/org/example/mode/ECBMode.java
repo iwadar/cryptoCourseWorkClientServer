@@ -2,6 +2,8 @@ package org.example.mode;
 
 import org.example.camellia.ISymmetricalCipher;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -64,6 +66,7 @@ public class ECBMode implements IModeCipher
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
+
         return result;
     }
     @Override

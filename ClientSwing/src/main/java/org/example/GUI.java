@@ -21,8 +21,9 @@ public class GUI extends JFrame {
     private static JScrollPane scrollPaneServer;
     private static JButton downloadButton;
     private static JButton uploadButton;
-
     private static JButton rebootButton;
+    private static JButton infoButton;
+
     private static JFrame frame;
     private static Table tableServer;
     private static Table tableClient;
@@ -76,9 +77,11 @@ public class GUI extends JFrame {
         downloadButton = new JButton("Download");
         uploadButton = new JButton("Upload");
         rebootButton = new JButton("Refresh");
+        infoButton = new JButton("Information");
         buttonGroup.add(downloadButton);
         buttonGroup.add(uploadButton);
         buttonGroup.add(rebootButton);
+        buttonGroup.add(infoButton);
         buttonGroup.setBorder(new EmptyBorder(1, 1, 1, 1));
 
         downloadButton.addActionListener(new ListenerActionDownload(host, port, tableServer));
@@ -93,6 +96,23 @@ public class GUI extends JFrame {
                     e.printStackTrace();
                 }
                 tableServer.updateTable(dataServerTable);
+            }
+        });
+
+        infoButton.addActionListener(new ActionListener() {
+            String msg = "This is an application for storing files on a remote server.\n" +
+                    "\n" +
+                    "To download a certain file, select the file and click \"Download\". Upon completion of the download, the file will be located in the \"User/Downloads/FileFromStorage\" folder.\n" +
+                    "\n" +
+                    "To upload a file to the server, click \"Upload\", select the file you want to upload.\n" +
+                    "\n" +
+                    "To view new files, press \"Refresh\".\n" +
+                    "\n" +
+                    "Author: Ivanchenko Daria\n" +
+                    "Group: M8O-310B-20";
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JOptionPane.showMessageDialog(null, msg);
             }
         });
 

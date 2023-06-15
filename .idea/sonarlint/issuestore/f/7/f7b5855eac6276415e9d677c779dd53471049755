@@ -1,0 +1,15 @@
+
+L
+java:S3740s"/Provide the parametrized type for this generic.(Æ³ª…8¶³Í †1
+Q
+java:S3740"/Provide the parametrized type for this generic.(£ûªışÿÿÿÿ8¶³Í †1
+Q
+java:S1066?"/Merge this if statement with the enclosing one.(ôİšıÿÿÿÿ8‹®ö†1
+Ÿ
+java:S1319s"The return type of this method should be an interface such as "ConcurrentMap" rather than the implementation "ConcurrentHashMap".(Æ³ª…8¹³Í †1
+U	java:S106S"9Replace this use of System.out or System.err by a logger.(¬â‰æ8¤´Í †1
+S	java:S106V"9Replace this use of System.out or System.err by a logger.(™¢$8¦´Í †1
+U	java:S106Y"9Replace this use of System.out or System.err by a logger.(·ìÿî8§´Í †1
+Z	java:S106g"9Replace this use of System.out or System.err by a logger.(Ã…©Ğúÿÿÿÿ8«´Í †1
+Z	java:S106l"9Replace this use of System.out or System.err by a logger.(÷¼½Úıÿÿÿÿ8­´Í †1
+^	java:S125˜"<This block of commented-out lines of code should be removed.(»•ûÿÿÿÿ8»´Í †1

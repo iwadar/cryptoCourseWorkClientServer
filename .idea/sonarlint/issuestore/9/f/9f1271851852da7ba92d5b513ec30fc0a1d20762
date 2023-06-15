@@ -1,0 +1,9 @@
+
+q
+java:S1488"[Immediately return this expression instead of assigning it to the temporary variable "res".(õ×á„
+P
+java:S1118":Add a private constructor to hide the implicit public one.(…™«×
+c	java:S1001"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÒµƒŒ
+N	java:S1065"9Replace this use of System.out or System.err by a logger.(ÞÁŒ×
+9
+java:S2119K"Save and re-use this "Random".(¶“¶ˆÿÿÿÿÿ

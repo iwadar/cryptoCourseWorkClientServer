@@ -1,0 +1,33 @@
+
+Q
+java:S3740/"/Provide the parametrized type for this generic.(øœ»¤ÿÿÿÿÿ8ïİÇ¤†1
+J
+java:S1604Y"(Make this anonymous inner class a lambda(×“Ì¨ıÿÿÿÿ8ñİÇ¤†1
+{	java:S115"ZRename this constant name to match the regular expression '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.(…¥‡Šıÿÿÿÿ8ŞÇ¤†1
+{	java:S115"ZRename this constant name to match the regular expression '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.(Ä¾Õëúÿÿÿÿ8ŞÇ¤†1
+y
+java:S1450"]Remove the "downloadButton" field and declare it as a local variable in the relevant methods.(ÁÇâ@8—ŞÇ¤†1
+q
+java:S1450"TRemove the "frame" field and declare it as a local variable in the relevant methods.(…êÀ 8˜ŞÇ¤†1
+v
+java:S1450"YRemove the "infoButton" field and declare it as a local variable in the relevant methods.(ØŞÙã8˜ŞÇ¤†1
+x
+java:S1450"[Remove the "rebootButton" field and declare it as a local variable in the relevant methods.(´ó‰í8™ŞÇ¤†1
+w
+java:S1450"ZRemove the "tableClient" field and declare it as a local variable in the relevant methods.(ş›”ˆ8™ŞÇ¤†1
+}
+java:S1450"[Remove the "uploadButton" field and declare it as a local variable in the relevant methods.(öúêÔúÿÿÿÿ8šŞÇ¤†1
+N
+java:S3010%",Remove this assignment of "dataServerTable".(ğÏ¦Éûÿÿÿÿ8ŸŞÇ¤†1
+I
+java:S3010&",Remove this assignment of "dataClientTable".(˜Ã–8ŸŞÇ¤†1
+V
+java:S28642"4Iterate over the "entrySet" instead of the "keySet".(‚Ş»˜ıÿÿÿÿ8«ŞÇ¤†1
+O
+java:S6126g"2Replace this String concatenation with Text block.(·Üêø8¦ß¤†1
+b
+java:S1128"@Remove this unused import 'javax.swing.table.DefaultTableModel'.(è†åûÿÿÿÿ8ÂŞÇ¤†1
+F
+java:S1128	")Remove this unused import 'java.io.File'.(†Ğ¥Å8ÃŞÇ¤†1
+Q
+java:S1068"4Remove this unused "scrollPaneServer" private field.(áàÂ‰8ÃŞÇ¤†1

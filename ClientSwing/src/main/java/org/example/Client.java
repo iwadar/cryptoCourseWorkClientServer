@@ -47,7 +47,7 @@ public class Client {
             writer.write(initializationVector.getBytes());
             writer.flush();
 
-            symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.ECB, initializationVector);
+            symmetricalAlgo = new D_Encryption(new Camellia(camelliaSecretKeyString), ModeCipher.CFB, initializationVector);
         } catch (IOException | ClassNotFoundException ex) {
             closeAll(socket, reader, writer, readerObject, writerObject);
         }
@@ -60,7 +60,9 @@ public class Client {
         File file = new File(fullFileName);
         String fileName = file.getName();
         if (state == Functional.UPLOAD) {
-            fileSize = file.length() + (Functional.SIZE_BLOCK_CAMELLIA - file.length() % Functional.SIZE_BLOCK_CAMELLIA);
+            if (file.length() != 0) {
+                fileSize = file.length() + (Functional.SIZE_BLOCK_CAMELLIA - file.length() % Functional.SIZE_BLOCK_CAMELLIA);
+            }
         }
         Request request = new Request(state, fileName, fileSize);
         try {

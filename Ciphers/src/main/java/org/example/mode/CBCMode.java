@@ -17,12 +17,6 @@ public class CBCMode implements IModeCipher
         this.initializationVector = IV;
         this.prevBlock = IV;
     }
-    public CBCMode(byte[] IV)
-    {
-        this.initializationVector = IV;
-        this.prevBlock = IV;
-    }
-
     @Override
     public byte[] encrypt(byte[] notCipherText)
     {

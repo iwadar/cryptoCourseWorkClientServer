@@ -11,6 +11,7 @@ public class Functional {
     public static final int GET_FILES = 111;
     public static final int DOWNLOAD = -128;
     public static final int OK = 200;
+    public static final int OK_FILE_IS_EMPTY = 201;
     public static final int SERVER_ERROR = 300;
     public static final int FILE_IS_NOT_EXIST = 305;
 

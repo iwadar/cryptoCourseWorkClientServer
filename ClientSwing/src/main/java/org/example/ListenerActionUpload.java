@@ -25,6 +25,8 @@ public class ListenerActionUpload implements ActionListener {
         if (jFileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             fileName[0] = jFileChooser.getSelectedFile();
             System.out.println("[LOG] : choose file " + fileName[0].getAbsoluteFile());
+        } else {
+            return;
         }
         if (fileName[0] != null) {
             EventQueue.invokeLater(new Runnable() {

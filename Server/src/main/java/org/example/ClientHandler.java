@@ -65,7 +65,7 @@ public class ClientHandler implements Runnable{
     @Override
     public void run() {
         String[] cipherKeys = keyExchange();
-        symmetricalAlgo = new D_Encryption(new Camellia(cipherKeys[0]), ModeCipher.ECB, cipherKeys[1]);
+        symmetricalAlgo = new D_Encryption(new Camellia(cipherKeys[0]), ModeCipher.CFB, cipherKeys[1]);
         while (socket.isConnected()) {
             try {
                 int sizeRequest = reader.read();
@@ -89,12 +89,12 @@ public class ClientHandler implements Runnable{
                     System.out.println("Request : get list of files");
                     sendListFiles();
                 }
-            } catch (IOException ex) {
+            } catch (IOException | NegativeArraySizeException ex) {
                 closeAll(socket, reader, writer, readerObject, writerObject);
                 break;
             }
         }
-        System.out.println("[LOG] : client has disconnected");
+        System.out.println("[LOG] : client has disconnected\n");
     }
 
     private int uploadFile(String fileName, long sizeFile) {
@@ -104,8 +104,10 @@ public class ClientHandler implements Runnable{
         }
         System.out.println("[LOG] : CREATE NEW FILE { " + fullFileName + " }");
         try {
-            long sizeUploadFiles = Functional.uploadFile(fullFileName, sizeFile, symmetricalAlgo, reader);
-            System.out.println("Read from client : " + sizeUploadFiles);
+            if (sizeFile != 0) {
+                long sizeUploadFiles = Functional.uploadFile(fullFileName, sizeFile, symmetricalAlgo, reader);
+                System.out.println("Read from client : " + sizeUploadFiles);
+            }
             listFileWithSize.put(fullFileName.substring(fullFileName.lastIndexOf('/') + 1), new File(fullFileName).length());
         }
         catch(IOException ex){
@@ -140,8 +142,10 @@ public class ClientHandler implements Runnable{
         }
         try {
             sendStartInfo(Functional.DOWNLOAD, fileName, sizeFile, Functional.OK);
-            long countWrite = Functional.downloadFile(pathToStorage + fileName, symmetricalAlgo, writer);
-            System.out.println("[LOG] : SEND (bytes) : " + countWrite);
+            if (sizeFile != 0) {
+                long countWrite = Functional.downloadFile(pathToStorage + fileName, symmetricalAlgo, writer);
+                System.out.println("[LOG] : SEND (bytes) : " + countWrite);
+            }
         }
         catch(IOException ex){
             System.out.println(ex.getMessage());
